@@ -1,0 +1,38 @@
+﻿using UnityEngine;
+using System;
+using System.Collections;
+
+
+public class LookedForItem : MonoBehaviour
+{
+
+	public Action<LookedForItem> OnItemCollected;
+	
+	private SpriteRenderer _spriteRenderer;
+
+	private SpriteRenderer[] _spritesInChildren;
+
+	void Awake ()
+    {
+		_spriteRenderer = GetComponent<SpriteRenderer>();
+		_spritesInChildren = GetComponentsInChildren<SpriteRenderer>();
+	}
+	
+    public void SetCollected()
+    {
+		if(_spriteRenderer != null)
+		{
+			_spriteRenderer.color = Color.white;
+		}
+		
+		foreach(SpriteRenderer sr in _spritesInChildren)
+		{
+			sr.color = Color.white;
+		}
+
+		if(OnItemCollected != null)
+		{
+			OnItemCollected(this);
+		}
+    }
+}

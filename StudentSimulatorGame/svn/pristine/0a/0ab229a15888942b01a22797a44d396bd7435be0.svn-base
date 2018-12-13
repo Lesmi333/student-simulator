@@ -1,0 +1,779 @@
+﻿using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine.SceneManagement;
+using DG.Tweening;
+using System;
+
+/* ChangeLog:
+ * Updated Spine package (http://ru.esotericsoftware.com/forum/Noteworthy-Spine-Unity-Topics-5924) (use Spine.Unity and Spine.Unity.Modules  (http://ru.esotericsoftware.com/forum/Spine-Unity-namespaces-6025))
+ * New GoogleAdsSDK (fixed bugs)
+ * Scenes are loaded by string. Its not necessary now to keep same order of scenes in enum
+ * Banners wont be repositioned untill splashes will end
+ * Added extra check before banner reposition to avoid its reload call (ManagerGoogle)
+ * Added push scene to no-ads list
+ * Added platform directives to support different platforms
+ * Removed Transition kit with shaders
+ * Pannel -> Panel
+ * 1.1.3
+ * Added mediation networks: Chartboost, UnityAds, InMobi, MobFox
+ * Added RateMePlugin
+ * Added Promo.v11
+ * Updated ManagerGoogle
+ * Updated AdmobManager
+ * Added PlayServicesResolver
+ * Added EditorTools for Textures and manifest
+ * Modified Audio toggle, LangPannel scripts
+ * Added hide promo OnSettingsVisible
+ * 1.1.4
+ * Fixed reposition of banner (didn't turned back to previous position): modified ManagerGoogle and AdmobManager 
+ * 1.1.5
+ * Moved Reposition small banner to event OnInterClosed
+ * Moved SceneLoader to namespace PSV_Prototype
+ * 1.1.6
+ * Fixed not calling OnInterClosed when Interstitial is not allowed to show
+ * 1.1.7
+ * Added support of FirebaseAnalytics
+ * 1.1.8
+ * Fixed Firebase LogEvent(SelectContent)
+ * 1.2.0
+ * Modified PauseStreams and GetSRC methods in AudioController 
+ * Added AdsInterop and AdsManager with IAdProvider interface for ad plugins
+ * Added resize banner interface
+ * Added support of Rewarded Video Ads
+ * Added support of Native Banners
+ * Removed AdmobManager
+ * Modified ManagerGoogle and SceneLoader classes to match AdsInterop's interface
+ * Implemented ExternalLinksManager to show one view per screen (thanks to Dmytro Vyshnevskyi)
+ * Modified 
+ * - PurchaseButton
+ * - AudioController
+ * - PromoModule
+ * - RateUs
+ * - ManagerGoogle
+ * - Utils
+ * - BillingManager
+ * - SceneLoader
+ * 1.2.2
+ * - Fixes for RateMeModule.PauseAudio
+ * 1.2.3
+ * - RateMeModule.PauseAudio deprecated
+ * - CanUseHome changed to work with interstitial count, not time (so it is possible to show home ads depending )
+ * - moved use_home reset to InterstitialShown event listener (this will save triggers state if interstitial wasn't shown, but InterstitialClosed event occured)
+ * 1.2.4 (17.01.2017)
+ * - Implemented ad request interval to avoid crashes in offline mode
+ * 1.2.5 (26.01.2017)
+ * - shortened log event message for ad errors from providers
+ * - AdsManager now implements home_ad_interval remote param to select home provider for showing own ads once per interval (used for all ad types)
+ * - RateMe module fixed to give correct value on IsVisible method called
+ * - FirebaseManager minor fixes
+ * - Updated SDKs for mediation networks
+ * 1.2.6 (20.02.2017)
+ * - Made changes to some scripts by adding define to support faster import into older prototype projects
+ * - SpineRuntime Last updated: UTC - 2017 February 18
+ * 1.2.7 (02.03.2017)
+ * - updated FirebaseManager to support oneshot database connection (minimising traffic)
+ * - implemented DB_connections limit in FirebaseManager managed by RemoteConfig, limits connection based on db_url
+ * - updated PromoModule to support RemoteConfig and RealtimeDatabase
+ * - moved ManagerGoogle's interstitial_time to RemoteConfig
+ * - fixed AdsProviders
+ * - updated HomeAdsSettings
+ * - SpineRuntime Last updated: UTC - 2017 February 27
+ * 1.2.8 (09.03.2017)
+ * - Updated FirebaseManager to avoid crashes in libraries
+ * - Implemented SimulateTransition method to make in-scene transitions easier (when switching between small episodes)
+ * 1.2.9 (21.03.2017)
+ * - Ads DummyProvider updated (fixed behaviour for AdsDisabled)
+ * - AdsManager is modified to exclude HomeAdsProvider as standalone to enable its disabling
+ * - ManagerGoogle now can change interval for the time interstitial will be shown at first
+ * - LanguagePannel and lang toggle were modified to match set of languages defined as a Dictionary in Languages.cs
+ * - RateMe module changed behavior for sound playback (now it will be played as pannel will become emabled
+ * - SpineRuntime Last updated: UTC - 2017 March 16
+ * 1.3.0 (22.03.2017)
+ * - GoogleAnalytics - added platform as a prefix to AppVersion (detailed changelog in script)
+ * - PromoModule, HomeAdsSettings, FirebaseManager, AnalyticsManager are modified to support non-Firebase Implementation (to exclude firebase from project just comment all occasions of "////#define FIREBASE_PRESENT" directive)
+ * 2.0.0 (30.03.2017)
+ * - Fixed RateMe (PauseAudio)
+ * - Excluded GoogleAdsProviders
+ * - NeatPlug can show Rewarded as Interstitial (Rewarded events still work)
+ * 2.0.0 (30.03.2017)
+ * - Added events to SceneLoader (OnSCreenObscured - when the screen is Faded)
+ * - Added events to GameSettings (On<group>VolumeChanged, On<group>Enabled)
+ * - Added Latest Mediation SDKs and new networks
+ * 3.0.0 (12.05.2017)
+ * - Added AdColony
+ * - Added Leadbolt
+ * - Reverted old partners plugins to same as in Traumatologist
+ * - Added mediation for IOS
+ * - Added Resolver for IOS
+ * - to build IOS project use HelpTol/Build IOS
+ * - import Latest Firebase and GoogleAds (exclude PlayServicesResolver)
+ * - use PlayServices resolver from Firebase only
+ * - ProjectSettingsContainer was updated (debug enabler for ads managers)
+ * - Now ManagerGoogle supports remote params for CHILDREN_TAGGED and FOR_FAMILIES (bool true/false)
+ * - Now Promo takes care of primary set to be loaded any way (only if project was launched under certain platform)
+ * - banner_visible_on_complete when simulating transition can ignore in scene rules for banner (reposition can be called before simulating with flag set true)
+ * - now Showing RateUs will ignore calling interstitial
+ * 3.0.1 (07.06.2017)
+ * - refactored AnalyticsManager
+ * - now scene loading will start after ScreenObscured callback complete
+ * - added event to monitor asyncSceneLoad progress
+ * 3.0.2 (09.06.2017)
+ * - patched AudioControllers PauseStreams method to clear list of paused sources on unpause
+ * - patched SceneLoader to pause Audio when interstitial is shown and unpause it whet it is closed (IOS feature not to pause game activity completely when it is interrupted by ad)
+ * - added AudioControler.OnPause event to support interation with custom controllers
+ * 3.0.3 (15.06.2017)
+ * - implemented scene load mode
+ * - AudioToggle for music now disabled to avoid copying of game sounds
+ * - GameSettings MusicVolume now inherits SoundsVolume
+ * - GameSettings will change simultaneously sounds and music settings
+ * 3.0.4 (30.06.2017)
+ * - added pause manager and GUI items for it (pause battons and pause panel)
+ * - made base class for dialogues
+ * - refactored settings panel
+ * - refactored AudioController
+ * - updated UI graphics
+ * 3.0.5
+ * - implemented PauseManager and GUI part to manage pause in game (pannel and pause buttons)
+ * 3.0.6
+ * - fixed AudioControler.GetPlayingSources (AudioSource.isPLaying returns false always when application loose focus)
+ * - fixed AudioControler's PauseStreams and PauseMusics to avoid bugs when set to pause second time
+ * - fixed BannerPannelController - Centered image (texture sticked to edge had double offset)
+ * 3.0.7
+ * - added FadeContentEnabler to avoid any visible content before interstitial was shown (Screen stays black till Interstitial will be closed, then all other stuff is enabled (loading label, progress bar))
+ * - FadeContentEnabler will automatically be added to fadeScreen gameObject
+ * - moved Banner and Native refresh to CompleteTransition method
+ * - implemented overrides of banner and native ad settings for transition (scene load and simulation)
+ * - moved LogScreeen analytics event to WaitForTransitionComplete coroutine (will take in account targetScene overrides by RateMeModule)
+ * - fixed rate me resetting last time (was set after scenetransition so if we use no effect transition, last time wont be reset and rate me will be shown again)
+ */
+
+namespace PSV_Prototype
+{
+
+
+	public class SceneLoader :MonoBehaviour
+	{
+		public delegate void OnSceneLoadedDelegate (Scene from, Scene to);
+		public static event OnSceneLoadedDelegate
+			OnSceneLoaded;
+		public static Action
+			OnScreenObscured;
+
+		public static Action<float>
+			OnLoadProgressChange;
+
+		public static SceneLoader Instance;
+
+		public enum TransitionMethod
+		{
+			Default,    //do not select this (service item)
+			Tween,      //using animathion of Canvas Image
+			None,       //using siple SceneManager.LoadScene()
+		}
+
+		private Scenes
+			_target_scene;
+
+		public bool
+			splash_transition = true,   //uncheck this to leave all scenes in Hierarchy and keep all necessary Instances created without switching to splashes
+			async_load = false;         //load scenes asynchronosly and have possibility to animate loading progress ar load it as usually
+
+		private bool
+			interstitial_closed = false,
+			in_transition = false;      //determines if we can start another transitrion (switching between few scenes in a row not allowed)
+
+		public List<Scenes>
+			splash_scenes = new List<Scenes> ( );   //list here all scenes that should be shown at the start of the game with some short lifetime
+
+		public Scenes
+			first_scene = Scenes.MainMenu,       //scene to load after splashes (usually MainMenu)
+			push_scene = Scenes.Push;        //scene where push service is set
+
+		public float
+			splash_duration = 2f,       //splash screen lifetime
+			transition_duration = 1f;   //transition animation duration
+
+		public TransitionMethod
+			transition_method = TransitionMethod.Tween;             //how to switch between scenes
+
+		public GameObject
+			fadeScreen;                 //link to object with Image with black texture which will fade over screen
+
+		private CanvasGroup
+			fade_group;                 //Image component of fade_screen
+
+		private TweenCallback
+			complete_simulate_transition = null;
+
+
+		#region ad_overrides
+
+		private bool?
+			override_banner_visible = null,
+			override_native_visible = null;
+
+
+		private AdsInterop.AdPosition
+			override_banner_pos = AdsInterop.AdPosition.Undefined,
+			override_native_pos = AdsInterop.AdPosition.Undefined;
+
+		private AdsInterop.AdSize
+			override_banner_size = null,
+			override_native_size = null;
+
+		#endregion
+
+		void Awake ()
+		{
+			if (!Instance)
+			{
+				Instance = this;
+				if (transition_method == TransitionMethod.Default)
+				{
+					transition_method = TransitionMethod.Tween;
+				}
+				DontDestroyOnLoad ( gameObject );
+				fade_group = fadeScreen.GetComponent<CanvasGroup> ( );
+				SetTargetScene ( first_scene );
+				if (fade_group == null)
+				{
+					fade_group = fadeScreen.AddComponent<CanvasGroup> ( );
+				}
+				fadeScreen.gameObject.SetActive ( false );
+
+				if (transition_method == TransitionMethod.Default)  //fixing if method haven't been selected properly
+				{
+					transition_method = TransitionMethod.Tween;
+				}
+				if (fadeScreen != null)
+				{
+					if (fadeScreen.GetComponent<FadeContentEnabler> ( ) == null)
+					{
+						fadeScreen.AddComponent<FadeContentEnabler> ( );
+					}
+				}
+			}
+		}
+
+		void OnEnable ()
+		{
+			Subscribe ( );
+		}
+
+
+		void OnDisable ()
+		{
+			Unsubscribe ( );
+		}
+
+		void Start ()
+		{
+#if !UNITY_EDITOR
+        //for those, who forgot to set this trigger to true before build
+        splash_transition = true;
+#endif
+			if (splash_transition)
+			{
+				StartCoroutine ( SplashSequence ( ) );
+			}
+
+			AnalyticsManager.LogEvent ( AnalyticsEvents.StartApplication );
+		}
+
+		#region EventListeners
+
+		private void ScreenObscured ()    //occurs when screen is frosen (hidden)
+		{
+			Scenes current_scene = GetCurrentScene ( );
+			if (OnScreenObscured != null)
+			{
+				OnScreenObscured ( );
+			}
+			//AudioController.ReleaseStreams ( ); //used for old AudioController
+			AudioController.Release ( true );
+			//call before other Scene dependent methods - can override target scene if using scene mode
+			if (ShowRateUs ( current_scene ))
+			{
+				InterstitialClosed ( );
+			}
+			else
+			{
+				ShowBigBanner ( current_scene );
+			}
+		}
+
+		private void InterstitialShown ()               //occurs when user closes interstitial
+		{
+			//PauseManager.Instance.SetPause ( true, false );
+		}
+
+		private void InterstitialClosed ()               //occurs when user closes interstitial
+		{
+			//PauseManager.Instance.SetPause ( false, false );
+			interstitial_closed = true;
+			CompleteSimulatingTransinion ( );
+		}
+
+		void CompleteTransition ()
+		{
+			Scenes current_scene = GetCurrentScene ( );
+			RefreshBanner ( current_scene );
+			RefreshNative ( current_scene );
+			in_transition = false;
+		}
+
+		void OnApplicationQuit ()
+		{
+			PlayerPrefs.Save ( );
+			AnalyticsManager.LogEvent ( AnalyticsEvents.CloseApplication );
+		}
+
+		#endregion
+
+		#region ServiceMethods
+
+		public bool IsSceneLoaded (string scene_name)
+		{
+			//search scene among active
+			for (int i = 0; i < SceneManager.sceneCountInBuildSettings; i++)
+			{
+				Scene s = SceneManager.GetSceneAt ( i );
+				if (s.name == scene_name && s.isLoaded)
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
+		public bool IsSceneActive (string scene_name)
+		{
+			return SceneManager.GetActiveScene ( ).name.Equals ( scene_name );
+		}
+
+		public string GetStringCurrentScene ()
+		{
+			return SceneManager.GetActiveScene ( ).name;
+		}
+
+		public Scenes GetCurrentScene ()
+		{
+			return GetStringCurrentScene ( ).ToEnum<Scenes> ( );
+		}
+
+		public Scenes GetTargetScene ()
+		{
+			return _target_scene;
+		}
+
+		public void SetTargetScene (Scenes scene)
+		{
+			_target_scene = scene;
+		}
+
+		private void Subscribe ()
+		{
+			ManagerGoogle.OnInterstitialClosed += InterstitialClosed;
+			ManagerGoogle.OnInterstitialShown += InterstitialShown;
+		}
+
+		private void Unsubscribe ()
+		{
+			ManagerGoogle.OnInterstitialClosed -= InterstitialClosed;
+			ManagerGoogle.OnInterstitialShown -= InterstitialShown;
+		}
+
+		private bool ShowRateUs (Scenes current_scene)
+		{
+			if (CanShowRateUs ( current_scene ) && ExtraRateMeConditions ( ))
+			{
+				if (RateMePlugin.RateMeModule.Instance.ShowDialogue ( ))
+				{
+					//you can manage here dialogue shown condition
+
+					return true;
+				}
+			}
+			return false;
+		}
+
+		private bool ExtraRateMeConditions () {
+            //can place here extra conditions 
+            // --- CUSTOM PROTOTYPE EDIT --- //
+            //return true;
+            bool canShow = (PopUpController.timesShown == 4 || PopUpController.timesShown == 8) && PopUpController.rateMeShownOnLastCounter == false;
+            if (canShow) {
+                PopUpController.rateMeShownOnLastCounter = true;
+            }
+            return canShow;
+            // --- CUSTOM PROTOTYPE EDIT --- //
+        }
+
+
+        private bool CanShowRateUs (Scenes current_scene)
+		{
+			return current_scene == RateMePlugin.RateMeModule.rate_scene && GetTargetScene ( ) != current_scene || SceneLoaderSettings.rate_me_after_end.Contains ( current_scene );
+		}
+
+		private bool CanContinueTransition (/*string level*/)
+		{
+			return !SceneLoaderSettings.transition_after_ad || interstitial_closed/* && GetStringCurrentScene ( ) == level*/;
+		}
+
+		public bool IsLoadingLevel ()
+		{
+			return in_transition;
+		}
+
+		public void SwitchToScene (Scenes target_scene, TransitionMethod method = TransitionMethod.Default, float override_duration = -1, LoadSceneMode load_mode = LoadSceneMode.Single)
+		{
+			if (!IsLoadingLevel ( ))
+			{
+				SetTargetScene ( target_scene );
+
+				in_transition = true;
+
+				interstitial_closed = false;
+
+				//will be enabled after transition complete
+				ManagerGoogle.Instance.HideNativeBanner ( );
+				ManagerGoogle.Instance.HideSmallBanner ( );
+
+				if (method == TransitionMethod.Default)
+					method = transition_method;
+
+				float duration = override_duration < 0 ? transition_duration : override_duration;
+
+				switch (method)
+				{
+					case TransitionMethod.None:
+						{
+							LoadScene ( load_mode, CompleteTransition );
+							break;
+						}
+					case TransitionMethod.Tween:
+						{
+							TweenLoadScene ( fade_group, duration, load_mode );
+							break;
+						}
+				}
+			}
+		}
+
+		IEnumerator SplashSequence ()   //coroutine for showing splash scenes with certain delay
+		{
+			for (int i = 0; i < splash_scenes.Count; i++)
+			{
+				SwitchToScene ( splash_scenes [i] );
+				yield return new WaitForSeconds ( splash_duration );
+			}
+			if (Utils.IsMobilePlatform ( ))
+			{
+				SwitchToScene ( PsvPushService.Instance.AreNewsAvailable ( ) ? push_scene : first_scene );
+			}
+			else
+			{
+				SwitchToScene ( first_scene );
+			}
+		}
+
+		#endregion
+
+		#region ADS
+		private void ShowBigBanner (Scenes current_scene)
+		{
+			if (!SceneLoaderSettings.not_allowed_interstitial.Contains ( GetCurrentScene ( ) ))
+			{
+				ManagerGoogle.Instance.ShowFullscreenBanner ( );
+			}
+			else
+			{
+				InterstitialClosed ( );
+			}
+		}
+
+		private bool RefreshBanner (Scenes target_scene)
+		{
+			bool show_banner = false;
+			if (Utils.IsMobilePlatform ( ))
+			{
+				show_banner = override_banner_visible != null ? override_banner_visible == true : !SceneLoaderSettings.not_allowed_small_banner.Contains ( target_scene );
+
+				if (show_banner)
+				{
+					AdsInterop.AdPosition target_pos;
+					if (override_banner_pos != AdsInterop.AdPosition.Undefined)
+					{
+						target_pos = override_banner_pos;
+
+					}
+					else if (!SceneLoaderSettings.small_banner_position_override.TryGetValue ( target_scene, out target_pos ))
+					{
+						target_pos = SceneLoaderSettings.small_banner_default_pos;
+					}
+
+					AdsInterop.AdSize target_size;
+					if (override_banner_size != null)
+					{
+						target_size = override_banner_size;
+					}
+					else if (!SceneLoaderSettings.small_banner_size_override.TryGetValue ( target_scene, out target_size ))
+					{
+						target_size = SceneLoaderSettings.small_banner_default_size;
+					}
+
+					ManagerGoogle.Instance.RefreshSmallBanner ( target_pos, target_size );
+					ManagerGoogle.Instance.ShowSmallBanner ( );
+				}
+				else
+				{
+					ManagerGoogle.Instance.HideSmallBanner ( );
+				}
+			}
+			OverrideBannerSettings ( );
+			return show_banner;
+		}
+
+		private bool RefreshNative (Scenes target_scene)
+		{
+			bool show_native = false;
+			if (Utils.IsMobilePlatform ( ))
+			{
+				show_native = override_native_visible != null ? override_native_visible == true : SceneLoaderSettings.native_allowed.Contains ( target_scene );
+
+				if (show_native)
+				{
+					AdsInterop.AdPosition target_pos;
+					if (override_native_pos != AdsInterop.AdPosition.Undefined)
+					{
+						target_pos = override_native_pos;
+
+					}
+					else if (!SceneLoaderSettings.native_position_override.TryGetValue ( target_scene, out target_pos ))
+					{
+						target_pos = SceneLoaderSettings.native_default_pos;
+					}
+
+					AdsInterop.AdSize target_size;
+					if (override_native_size != null)
+					{
+						target_size = override_native_size;
+					}
+					else if (!SceneLoaderSettings.native_size_override.TryGetValue ( target_scene, out target_size ))
+					{
+						target_size = SceneLoaderSettings.native_default_size;
+					}
+
+					ManagerGoogle.Instance.RefreshNativeBanner ( target_pos, target_size );
+					ManagerGoogle.Instance.ShowNativeBanner ( );
+				}
+				else
+				{
+					ManagerGoogle.Instance.HideNativeBanner ( );
+				}
+			}
+			OverrideNativeSettings ( );
+			return show_native;
+		}
+
+		/// <summary>
+		/// Call before Loading scene or simulating transition. Will override setings only for current transition. Call without arguments to reset overrides.
+		/// </summary>
+		/// <param name="visible"></param>
+		/// <param name="pos"></param>
+		/// <param name="size"></param>
+		public void OverrideBannerSettings (bool? visible = null, AdsInterop.AdPosition pos = AdsInterop.AdPosition.Undefined, AdsInterop.AdSize size = null)
+		{
+			override_banner_visible = visible;
+			override_banner_pos = pos;
+			override_banner_size = size;
+		}
+
+		/// <summary>
+		/// Call before Loading scene or simulating transition. Will override setings only for current transition. Call without arguments to reset overrides.
+		/// </summary>
+		/// <param name="visible"></param>
+		/// <param name="pos"></param>
+		/// <param name="size"></param>
+		public void OverrideNativeSettings (bool? visible = null, AdsInterop.AdPosition pos = AdsInterop.AdPosition.Undefined, AdsInterop.AdSize size = null)
+		{
+			override_native_visible = visible;
+			override_native_pos = pos;
+			override_native_size = size;
+		}
+
+		#endregion
+
+		#region TweenTransition
+
+		IEnumerator Fade (CanvasGroup fader, float target, float fadeTime, TweenCallback OnComplete)
+		{
+			float sign = 0f;
+			if (fader.alpha > target)
+			{
+				sign = -1f;
+			}
+			if (fader.alpha < target)
+			{
+				sign = 1f;
+			}
+			while (fader.alpha != target)
+			{
+				float delta = (Time.unscaledDeltaTime / fadeTime) * sign;
+				fader.alpha = Mathf.Clamp01 ( fader.alpha + delta );
+				yield return null;
+			}
+			OnComplete ( );
+		}
+
+
+		public void SimulateTransition (TweenCallback on_screen_obscured, bool show_interstitial = true, float override_duration = -1)
+		{
+			float duration = override_duration < 0 ? transition_duration : override_duration;
+			complete_simulate_transition = () =>
+			{
+				on_screen_obscured ( );
+				SceneTransition ( true, CompleteTransition, fade_group, duration );
+			};
+			SceneTransition ( false, () =>
+			{
+				if (show_interstitial)
+				{
+					ManagerGoogle.Instance.ShowFullscreenBanner ( );
+				}
+				else
+				{
+					CompleteSimulatingTransinion ( );
+				}
+			}, fade_group, duration );
+		}
+
+		private void CompleteSimulatingTransinion ()
+		{
+			if (complete_simulate_transition != null)
+			{
+				complete_simulate_transition ( );
+				complete_simulate_transition = null;
+			}
+		}
+
+		private void TweenLoadScene (CanvasGroup fade_image, float duration, LoadSceneMode load_mode)
+		{
+			SceneTransition ( false, () => TweenCompleteTransition ( fade_image, duration, load_mode ), fade_image, duration );
+		}
+
+
+		private void TweenCompleteTransition (CanvasGroup fade_image, float duration, LoadSceneMode load_mode)
+		{
+			LoadScene ( load_mode, () =>
+			{
+				SceneTransition ( true, CompleteTransition, fade_image, duration );
+			} );
+		}
+
+
+		public void SceneTransition (bool open, TweenCallback callback, CanvasGroup fade_image, float fadeTime, bool use_tween = false)
+		{
+			if (open)
+			{
+				TweenCallback fadeCallback = delegate
+				{
+					fade_image.gameObject.SetActive ( false );
+					if (callback != null)
+					{
+						callback ( );
+					}
+				};
+				AnimateFadeScreen ( fadeCallback, fade_image, 0, fadeTime, use_tween );
+			}
+			else
+			{
+				fade_image.gameObject.SetActive ( true );
+				AnimateFadeScreen ( callback, fade_image, 1, fadeTime, use_tween );
+			}
+		}
+
+
+		private Tween fade_anim = null;
+
+
+		void ResumeAnim ()
+		{
+			if (fade_anim != null && fade_anim.IsActive ( ))
+			{
+				fade_anim.Play ( );
+			}
+		}
+
+		void AnimateFadeScreen (TweenCallback callback, CanvasGroup fade_image, float targetVal, float fadeTime, bool use_tween)
+		{
+			if (use_tween)
+			{
+				fade_anim = fade_image.DOFade ( targetVal, fadeTime ).OnComplete ( callback ).SetUpdate ( true ).OnPause ( () => ResumeAnim ( ) );
+			}
+			else
+			{
+				StartCoroutine ( Fade ( fade_image, targetVal, fadeTime, callback ) );
+			}
+		}
+
+
+		#endregion
+
+		#region NoEffectTransition
+		private void LoadScene (LoadSceneMode load_mode, TweenCallback load_complete_callback = null)   //generic way of loading scene without animation
+		{
+			ScreenObscured ( );
+			StartCoroutine ( WaitForTransitionComplete ( load_complete_callback, load_mode ) );
+		}
+
+		IEnumerator WaitForTransitionComplete (TweenCallback callback, LoadSceneMode load_mode)
+		{
+			while (!CanContinueTransition ( ))
+			{
+				//Debug.Log ( "Interstitial not closed" );
+				yield return null;
+			}
+			string level = GetTargetScene ( ).ToString ( );
+
+
+			if (async_load)
+			{
+				AsyncOperation a_op = SceneManager.LoadSceneAsync ( level, load_mode );
+
+				//this method enables Scene after it is loaded immediately
+				while (!a_op.isDone)
+				{
+					if (OnLoadProgressChange != null)
+					{
+						OnLoadProgressChange ( a_op.progress );
+					}
+					//Debug.Log ( "Scene " + level + " loading:  " + a_op.progress + " %" );
+					yield return null;
+				}
+			}
+			else
+			{
+				SceneManager.LoadScene ( level, load_mode );
+			}
+
+
+			while (!IsSceneActive ( level ))
+			{
+				//Debug.Log ( "Can't continue transition" );
+				yield return null;
+			}
+
+			AnalyticsManager.LogEvent ( AnalyticsEvents.LogScreen, level );
+
+			if (callback != null)
+			{
+				callback ( );
+			}
+		}
+
+		#endregion
+
+	}
+}

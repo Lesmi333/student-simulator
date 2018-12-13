@@ -1,0 +1,423 @@
+fileFormatVersion: 2
+guid: 8d84fc1c3b05dbf429ac42c2f6a5863c
+timeCreated: 1494837345
+licenseType: Free
+TextureImporter:
+  fileIDToRecycleName:
+    21300000: forestObject3_0
+    21300002: forestObject3_1
+    21300004: forestObject3_2
+    21300006: forestObject3_3
+    21300008: forestObject3_4
+    21300010: forestObject3_5
+    21300012: forestObject3_6
+    21300014: forestObject3_7
+    21300016: forestObject3_8
+    21300018: forestObject3_9
+    21300020: forestObject3_10
+    21300022: forestObject3_11
+    21300024: forestObject3_12
+    21300026: forestObject3_13
+    21300028: forestObject3_14
+    21300030: forestObject3_15
+    21300032: forestObject3_16
+    21300034: forestObject3_17
+    21300036: forestObject3_18
+    21300038: forestObject3_19
+    21300040: forestObject3_20
+    21300042: forestObject3_21
+    21300044: forestObject3_22
+    21300046: forestObject3_23
+    21300048: forestObject3_24
+    21300050: forestObject3_25
+  serializedVersion: 2
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 1
+    linearTexture: 0
+    correctGamma: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+  isReadable: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 0
+  cubemapConvolution: 0
+  cubemapConvolutionSteps: 7
+  cubemapConvolutionExponent: 1.5
+  seamlessCubemap: 0
+  textureFormat: -1
+  maxTextureSize: 2048
+  textureSettings:
+    filterMode: -1
+    aniso: 16
+    mipBias: -1
+    wrapMode: 1
+  nPOTScale: 0
+  lightmap: 0
+  rGBM: 0
+  compressionQuality: 50
+  allowsAlphaSplitting: 0
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spritePixelsToUnits: 300
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  buildTargetSettings: []
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: forestObject3_0
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 860
+        width: 140
+        height: 154
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: forestObject3_1
+      rect:
+        serializedVersion: 2
+        x: 170
+        y: 855
+        width: 131
+        height: 158
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: forestObject3_2
+      rect:
+        serializedVersion: 2
+        x: 324
+        y: 903
+        width: 114
+        height: 109
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: forestObject3_3
+      rect:
+        serializedVersion: 2
+        x: 450
+        y: 855
+        width: 128
+        height: 165
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: forestObject3_4
+      rect:
+        serializedVersion: 2
+        x: 600
+        y: 870
+        width: 132
+        height: 145
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: forestObject3_5
+      rect:
+        serializedVersion: 2
+        x: 766
+        y: 783
+        width: 228
+        height: 232
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: forestObject3_6
+      rect:
+        serializedVersion: 2
+        x: 1010
+        y: 777
+        width: 230
+        height: 225
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: forestObject3_7
+      rect:
+        serializedVersion: 2
+        x: 1266
+        y: 837
+        width: 284
+        height: 174
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: forestObject3_8
+      rect:
+        serializedVersion: 2
+        x: 1584
+        y: 918
+        width: 66
+        height: 79
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: forestObject3_9
+      rect:
+        serializedVersion: 2
+        x: 1687
+        y: 728
+        width: 337
+        height: 282
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: forestObject3_10
+      rect:
+        serializedVersion: 2
+        x: 1584
+        y: 838
+        width: 54
+        height: 52
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: forestObject3_11
+      rect:
+        serializedVersion: 2
+        x: 378
+        y: 534
+        width: 162
+        height: 242
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: forestObject3_12
+      rect:
+        serializedVersion: 2
+        x: 805
+        y: 478
+        width: 185
+        height: 293
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: forestObject3_13
+      rect:
+        serializedVersion: 2
+        x: 1586
+        y: 770
+        width: 60
+        height: 49
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: forestObject3_14
+      rect:
+        serializedVersion: 2
+        x: 29
+        y: 576
+        width: 145
+        height: 184
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: forestObject3_15
+      rect:
+        serializedVersion: 2
+        x: 214
+        y: 580
+        width: 163
+        height: 177
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: forestObject3_16
+      rect:
+        serializedVersion: 2
+        x: 587
+        y: 550
+        width: 172
+        height: 220
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: forestObject3_17
+      rect:
+        serializedVersion: 2
+        x: 1029
+        y: 409
+        width: 226
+        height: 345
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: forestObject3_18
+      rect:
+        serializedVersion: 2
+        x: 1531
+        y: 379
+        width: 507
+        height: 306
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: forestObject3_19
+      rect:
+        serializedVersion: 2
+        x: 78
+        y: 393
+        width: 124
+        height: 84
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: forestObject3_20
+      rect:
+        serializedVersion: 2
+        x: 210
+        y: 305
+        width: 240
+        height: 97
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: forestObject3_21
+      rect:
+        serializedVersion: 2
+        x: 388
+        y: 379
+        width: 162
+        height: 77
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: forestObject3_22
+      rect:
+        serializedVersion: 2
+        x: 805
+        y: 158
+        width: 185
+        height: 293
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: forestObject3_23
+      rect:
+        serializedVersion: 2
+        x: 35
+        y: 331
+        width: 141
+        height: 58
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: forestObject3_24
+      rect:
+        serializedVersion: 2
+        x: 587
+        y: 280
+        width: 155
+        height: 71
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: forestObject3_25
+      rect:
+        serializedVersion: 2
+        x: 481
+        y: 225
+        width: 86
+        height: 70
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    outline: []
+  spritePackingTag: 
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

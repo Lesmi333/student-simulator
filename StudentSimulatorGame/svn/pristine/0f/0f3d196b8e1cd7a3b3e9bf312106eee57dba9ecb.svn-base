@@ -1,0 +1,720 @@
+﻿using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+using HippoChildrenCafe.Common;
+using HippoChildrenCafe.Controllers;
+using HippoChildrenCafe.Spawners;
+using HippoChildrenCafe.Settings;
+using HippoChildrenCafe.Tutorials;
+using Extensions;
+using DG.Tweening;
+using System.Linq;
+
+namespace HippoChildrenCafe.Objects
+{
+    public class AnimalFeedingBehavior : MonoBehaviour, IPoolElement
+    {
+        public delegate void ConsumedEventHandler(GameObject salver, string holder);
+        public delegate void ClientReachedChair  (AnimalFeedingBehavior currClient);
+        public delegate void ClientRelease       (AnimalFeedingBehavior currClien, float xScale, Vector2 startPos);
+
+        public event ConsumedEventHandler OnConsumedProduct;
+        public event ClientReachedChair   OnReachedChair;
+        public event ClientRelease        OnReleseClient;
+
+        private const float MAX_PATIENCE = 1f,
+            TIME_MULTYPLAYER = 50;
+
+        private GameObject _staffContainer,
+            _activeDessert,
+            _activeCoffee,
+            _patienceBar,
+            _parent,
+
+            _coinPos,
+            _charClient,
+            _trashObject,
+
+            _foodPlaceHolder,     
+            _helperCloud;
+
+        private List<GameObject> _assortmentDessert,
+            _assortmentCoffee;
+
+        private RandomList<GameObject> _randomDesert;
+
+         private RandomList<GameObject> _randomCoffe;
+
+        private List<GameObject> _desertList;
+
+        private List<GameObject> _coffeList;
+
+        private SpriteRenderer _progressLine;
+
+        //private RangeI _randOrderActive,
+        //    _randOrderChoice;
+
+        private Tween _tweenCallback;
+
+        private Vector2 _startClientPos;
+
+        private float _patienceAmount,
+            _patienceDecValue,
+            _startLocalScaleX,
+            _time;
+
+        private bool _mismatchOfOne,
+            _dessertIsGone,
+            _coffeeIsGone,
+
+            _doNotCharge,
+            _decreseStart,
+
+            _fullPayment,
+            _coffeeIsActive,
+            _isOrderSpeaked;
+
+        private int _processedOrders;
+
+        private GameObject _chairObject;
+
+        private FeedingClientsSpawner _spawner;
+
+        public bool clientIsActive { get; set; }
+        public bool decreseOff     { get; set; }
+        public bool servicedFailed { get; set; }
+
+        public GameObject activeCoffee { get { return _activeCoffee; } }
+        public GameObject activeDessert { get { return _activeDessert; } }
+
+        public Vector2 startClientPos { get; set; }
+
+        public GameObject clientSalver { get; set; }
+        public GameObject charClient   { get { return _charClient; } }
+
+        public string chairName { get { return _chairObject.name; } set { } }
+
+        public float patienceAmount { get { return _patienceAmount; } }
+
+        public AnimalActivityState animalState { get; set; }
+                
+        #region private method
+        private void InitClientsAssortment()
+        {
+            Transform dessertTransf, coffeeTransf;
+
+            dessertTransf = _staffContainer.transform.Find("dessert_container");
+            coffeeTransf  = _staffContainer.transform.Find("coffee_container" );
+
+            _processedOrders = 0;
+
+            _assortmentDessert = new List<GameObject>();
+            foreach (Transform food in dessertTransf)
+            {
+                _assortmentDessert.Add(food.gameObject);
+            }
+
+            _assortmentCoffee = new List<GameObject>();
+            foreach (Transform food in coffeeTransf)
+            {
+                _assortmentCoffee.Add(food.gameObject);
+            }
+        }
+
+        private void DecreesePatience()
+        {
+            _patienceAmount = Mathf.Clamp(_patienceAmount - (_patienceDecValue * Time.deltaTime * TIME_MULTYPLAYER), 0, MAX_PATIENCE);
+        }
+
+        private void UpdatePatience()
+        {
+            _progressLine.transform.localScale = new Vector2(_patienceAmount, _progressLine.transform.localScale.y);
+        }
+
+        private void SetOrientationsBeforeWalk()
+        {
+            if (_chairObject.name == "client_chair_right") FlipObject(_charClient.transform.parent);
+        }              
+
+        private void CharServedFinished(Vector2 posToJump) {
+            ClientsFeedingController.Instance.hasNextClient = false;
+
+            ClientsFeedingController.Instance.ChangePerspectiveBack();
+            ClientsFeedingController.Instance.SalverChangeLayerName(clientSalver, "Foreground");
+
+            transform
+                .DOMove(posToJump, 0.15f)
+                .SetEase(Ease.Linear)
+                .SetDelay(0.3f)
+                .OnComplete(() => {
+                    FlipObject(_charClient.transform.parent);
+                    _charClient.GetComponent<Animator>().SetTrigger("Char_move_to_target");
+
+                    _spawner.countServedClients--;
+                    transform
+                        .DOMove(GetPosToLeaveChar(), 3.5f)
+                        .SetEase(Ease.Linear)
+                        .OnComplete(() => {
+                            clientIsActive = false;
+
+                            if (OnReleseClient != null) {
+                                OnReleseClient(this, _startLocalScaleX, _startClientPos);
+                            }     
+                        });
+            });
+        }
+
+        private void CharJoyAfterConsumption(string trigger, System.Action callBack)
+        {
+            string clip = (trigger == "Char_idle_sad") ? "sit_on_chair_sad" : "sit_on_chair_joy";
+
+            _charClient.GetComponent<Animator>().SetTrigger(trigger);                       
+
+            _time = _charClient.GetComponent<Animator>().GetCurrentClipLength(clip);
+            DOVirtual.DelayedCall(_time, delegate { if (callBack != null) callBack(); });
+        }
+
+        private void ServedCharSuccessfuly()
+        {
+            if (!_mismatchOfOne) {
+                AudioPlayer.Instance.Play("hp-24");
+            }
+            else {
+                AudioPlayer.Instance.Play("hp-25");
+            }
+
+            HideIndicators(true);
+            ClientsFeedingController.Instance.ResetSalver(clientSalver);
+
+            Vector2 posToJump = SetCharJumpPos();
+            AudioPlayer.Instance.Play(new string[] { "Smex 1", "smex 2", }[Random.Range(0, 2)]);
+            CharJoyAfterConsumption("Char_idle_joy", () => { CharServedFinished(posToJump); });
+        }
+
+        private void ResultOfChoise(GameObject activeOrder, int choise, System.Action callBack)
+        {
+            activeOrder.transform.GetChild(choise).localScale = Vector2.zero;
+            activeOrder.transform.GetChild(choise).gameObject.SetActive(true);
+            activeOrder.transform.GetChild(choise).DOScale(1.05f, 0.7f).SetEase(Ease.OutBounce).OnComplete(delegate
+            {
+               if (!_doNotCharge) DOVirtual.DelayedCall(0.5f, delegate
+               {
+                   int coinAmount = (_fullPayment.Equals(true)) ? 2 : 1;
+
+                   ClientsFeedingController.Instance.rewardForSceneCount += coinAmount;
+
+                   Transform tableTransf = _chairObject.transform.parent.parent;
+
+                   Vector2 targetPos = new Vector2(tableTransf.position.x + 0.75f, tableTransf.position.y + 0.25f);
+
+                   MoneyController.Instance.PutCoinOnTable(new Vector2(0.74f, 0.1f), targetPos, coinAmount, _chairObject.transform.parent.parent);
+                   ClientsFeedingController.Instance.destroyableTweens.Push(DOVirtual.DelayedCall(3.5f, () => { MoneyController.Instance.TakeAllCoins(); }, false));
+
+                   _fullPayment = false;
+               });
+
+                activeOrder.transform.GetChild(choise).gameObject.SetActive(false);
+                activeOrder.SetActive(false);
+
+                if (callBack != null) callBack();
+            });
+        }       
+
+        private void CharConsumesProduct(string trigger)
+        {
+            AudioPlayer.Instance.Play("Klient est");
+
+            string animation = (trigger == "Char_idle_eating") ? "eating_idle" : "drinking_idle";
+
+            _charClient.GetComponent<Animator>().SetTrigger(trigger);
+
+            _time = _charClient.GetComponent<Animator>().GetCurrentClipLength(animation);            
+
+            DOVirtual.DelayedCall(_time, delegate
+            {
+                if (_dessertIsGone && _coffeeIsGone) ServedCharSuccessfuly();
+            });
+        }
+
+        private void CharThrowsProductAway(Sprite sprite)
+        {
+            _foodPlaceHolder.GetComponent<SpriteRenderer>().sprite = sprite;
+
+            _charClient.GetComponent<Animator>().SetTrigger("Char_throw_product");
+            _time = _charClient.GetComponent<Animator>().GetCurrentClipLength("throw_order");
+
+            ClientsFeedingController.Instance.ResetSalver(clientSalver);
+
+            AudioPlayer.Instance.Play("hp-26");
+            DOVirtual.DelayedCall(_time, delegate
+            {
+                _trashObject.transform.GetChild(2).GetComponent<SpriteRenderer>().sprite = sprite;
+
+                string trigger = (_chairObject.name == "client_chair_left") ? "Left_throw" : "Right_throw";
+
+                _trashObject.GetComponent<Animator>().SetTrigger(trigger);
+                HideIndicators(true);
+
+                Vector2 posToJump = SetCharJumpPos();
+                CharServedFinished(posToJump);
+            });
+        }
+
+        private void CharTakeDessert(GameObject activeOrder, Sprite sprite, int indicator, System.Action callBack)
+        {
+            _foodPlaceHolder.GetComponent<SpriteRenderer>().sprite = sprite;
+
+            _charClient.GetComponent<Animator>().SetTrigger("Char_take_dessert");
+            _time = _charClient.GetComponent<Animator>().GetCurrentClipLength("take_dessert");
+
+            DOVirtual.DelayedCall(_time - 0.5f, delegate
+            {
+                if (OnConsumedProduct != null) OnConsumedProduct(clientSalver, "dessert");
+                ResultOfChoise(activeOrder, indicator, callBack);
+            });
+        }
+
+        private void CharTakeCoffee(GameObject activeOrder, Sprite sprite, int indicator, System.Action callBack)
+        {
+            _foodPlaceHolder.GetComponent<SpriteRenderer>().sprite = sprite;
+
+            _charClient.GetComponent<Animator>().SetTrigger("Char_take_coffee");
+            _time = _charClient.GetComponent<Animator>().GetCurrentClipLength("take_coffee_test");
+
+            DOVirtual.DelayedCall(_time - 0.5f, delegate
+            {
+                if (OnConsumedProduct != null) OnConsumedProduct(clientSalver, "coffee");
+                ResultOfChoise(activeOrder, indicator, callBack);
+            });
+        }        
+
+        private void ChangeDirectionBefore(Transform objTransf)
+        {
+            Vector3 theScale = objTransf.localScale;
+
+            if (Mathf.Sign(theScale.x) < 0)
+            {
+                if (_chairObject.name.Equals("client_chair_right"))
+                    FlipObject(objTransf);
+            }
+            else
+            {
+                if (Mathf.Sign(theScale.x) > 0)
+                {
+                    if (_chairObject.name.Equals("client_chair_left"))
+                        FlipObject(objTransf);
+                }
+            }
+        }
+        
+        private void FlipObject(Transform flipTransf)
+        {
+            Vector3 theScale = flipTransf.localScale;
+
+            theScale.x *= -1;
+            flipTransf.localScale = theScale;
+        }
+
+        private Vector3 GetPosToLeaveChar()
+        {
+            Vector3 posToLeave = new Vector3();
+
+            switch (_chairObject.name)
+            {
+                case "client_chair_right":
+                    posToLeave = CafeSettings.clientLeavePos[0];
+                    break;
+                case "client_chair_left":
+                    posToLeave = CafeSettings.clientLeavePos[1];
+                    break;
+
+            }
+            return posToLeave;
+        }
+
+        private Vector2 GetScaleBySign(Vector2 localScale, float scale)
+        {
+            Vector2 increaseScale;
+
+            if (Mathf.Sign(localScale.x) < 0)
+                increaseScale = new Vector2(localScale.x - scale, localScale.y + scale);
+            else
+                increaseScale = new Vector2(localScale.x + scale, localScale.y + scale);
+
+            return increaseScale;
+        }
+
+        private Vector2 SetCharJumpPos()
+        {
+            Vector2 posToJump = new Vector2();
+
+            if (_chairObject.name == "client_chair_right")
+                posToJump.x = transform.position.x - 0.45f;
+            else posToJump.x = transform.position.x + 0.45f;
+
+            posToJump.y = transform.position.y - 0.95f;
+
+            return posToJump;
+        }
+
+        private Vector2 GetPosToMove()
+        {
+            return (_chairObject.name == "client_chair_left") ? CafeSettings.targetPosChair[0] : CafeSettings.targetPosChair[1];
+        }
+        #endregion
+
+        #region public methods
+        public void InitClient(GameObject trash)
+        {
+            _staffContainer = transform.Find("helper_cloud/cloud_wish_char/cloud_base/staff_сontainer").gameObject;
+
+            _helperCloud = transform.Find("helper_cloud/cloud_wish_char").gameObject;
+            _foodPlaceHolder = transform.Find("character/Telo/Ruka_2/2324_10").gameObject;
+
+            _patienceBar = transform.Find("patience_bar").gameObject;
+            _coinPos = transform.Find("coin_pos").gameObject;
+
+            _trashObject = trash;
+            _parent = transform.parent.gameObject;
+            _charClient = transform.GetChild(0).gameObject;
+
+            _startClientPos = transform.position;
+            _startLocalScaleX = transform.localScale.x;
+
+            animalState = AnimalActivityState.NONE;
+
+            _helperCloud.transform.parent.gameObject.SetActive(true);
+
+            OnReachedChair += new ClientReachedChair(ClientsFeedingController.Instance.OrderСonsumption);
+
+            _progressLine = _patienceBar.transform.GetChild(2).GetComponent<SpriteRenderer>();
+
+           // _randOrderActive = new RangeI(0, 3);
+            //_randOrderChoice = new RangeI(0, 1);
+
+            _patienceAmount = MAX_PATIENCE;
+
+            InitClientsAssortment();
+
+            _spawner = transform.parent.GetComponent<FeedingClientsSpawner>();
+        }
+
+        public void LaunchClient(GameObject chairObject, float decreaseValue, bool speakOrder)
+        {
+            _desertList = new List<GameObject>(_assortmentDessert);
+            _randomDesert = new RandomList<GameObject>(_desertList);
+           // print("deser: " + _randomDesert.Get());
+            _coffeList = new List<GameObject>(_assortmentCoffee);
+            _randomCoffe = new RandomList<GameObject>(_coffeList);
+           // print("koffe:" + _randomCoffe.Get());
+            _chairObject = chairObject;
+            _isOrderSpeaked = speakOrder;
+            _patienceDecValue = decreaseValue;
+            _activeDessert = _randomDesert.Get();  //_assortmentDessert[_randOrderActive.GetRandom()];
+            _activeCoffee = _randomCoffe.Get();    //_assortmentCoffee[_randOrderActive.GetRandom()];
+
+            _activeDessert.SetActive(true);
+            _activeCoffee.SetActive(true);
+        }        
+
+        public void MoveCharToTable()
+        {
+            AudioPlayer.Instance.Stop("Smex 1");
+            AudioPlayer.Instance.Stop("smex 2");
+
+            Transform clientHolder = _charClient.transform.parent;
+
+            _charClient.GetComponent<Animator>().SetTrigger("Char_move_to_target");
+            _tweenCallback = transform.DOMove(new Vector2(0.15f, 2.41f), 1.5f).SetEase(Ease.Linear).OnComplete(delegate
+            {
+                ChangeDirectionBefore(clientHolder);
+
+                Vector2 middleTargetPos = (_chairObject.name.Equals("client_chair_left")) ? CafeSettings.middleTargetPos[0] : CafeSettings.middleTargetPos[1];
+
+                _charClient.transform.ChangeOrderRecursively(15);
+                _chairObject.transform.GetChild(0).GetComponent<SpriteRenderer>().sortingOrder = 40;
+
+                clientHolder.DOScale(GetScaleBySign(clientHolder.localScale, 0.3f), 1.5f);
+                _tweenCallback = clientHolder.DOMove(middleTargetPos, 1.5f).SetEase(Ease.Linear).OnComplete(delegate
+                {
+                    FlipObject(clientHolder);
+                    _charClient.transform.ChangeOrderRecursively(-30);
+                    _chairObject.transform.GetChild(0).GetComponent<SpriteRenderer>().sortingOrder = -15;
+
+                    clientHolder.DOScale(GetScaleBySign(clientHolder.localScale, 0.3f), 1.5f);
+                    _tweenCallback = clientHolder.transform.DOMove(new Vector2(-0.09f, -2.75f), 1.5f).SetEase(Ease.Linear).OnComplete(delegate
+                    {
+                        ClientsFeedingController.Instance.salver.SetActive(true);
+
+                        clientSalver = ClientsFeedingController.Instance.salver;
+                        _charClient.GetComponent<Animator>().SetTrigger("Char_idle");
+
+                        clientHolder.parent = ClientsFeedingController.Instance.clientHolder.transform;
+                        clientHolder.localPosition = Vector2.left * 0.63f;
+
+                        ClientsFeedingController.Instance.SetActiveOrdersIcons(CafeSettings.dessertOrdersPos, "dessert_menu_list", _activeDessert.name);
+                        ClientsFeedingController.Instance.SetActiveOrdersIcons(CafeSettings.coffeeOrdersPos,  "coffee_menu_list",  _activeCoffee.name );
+
+                        if (!ClientsFeedingController.Instance.isEndOflevel) ClientsFeedingController.Instance.ChangePerspective();
+
+                        DOVirtual.DelayedCall(1.2f, delegate
+                        {
+                            _helperCloud.GetComponent<Animator>().SetTrigger("cloud_wish_show");
+
+                            clientIsActive = true;
+                            _decreseStart = true;
+                            var dessertSpeech = GetDessertNameFromOrder(_activeDessert.GetComponent<SpriteRenderer>().sprite);
+                            var drinkSpeech = GetDrinkNameFromOrder(_activeCoffee.GetComponent<SpriteRenderer>().sprite);
+                            if (_isOrderSpeaked)
+                            {
+                                DOVirtual.DelayedCall(AudioPlayer.Instance.Play("cv_hp-5") + 0.1f, () => {
+                                    DOVirtual.DelayedCall(AudioPlayer.Instance.Play(dessertSpeech), () => {
+                                        AudioPlayer.Instance.Play(drinkSpeech);
+                                    });
+                                });
+                            }  
+
+                            _patienceBar.transform.localScale = new Vector2(0.18f, 0.22f);
+                        });
+                    });
+                });
+            });
+        }
+
+        private string GetDessertNameFromOrder(Sprite dessert)
+        {
+            string dessertName = "";
+            switch (dessert.name)
+            {
+                case "dessert_images_0":
+                    //air kiss
+                    dessertName = "cv_hp-6";
+                    break;
+                case "dessert_images_1":
+                    //strela
+                    dessertName = "cv_hp-8";
+
+                    break;
+                case "dessert_images_2":
+                    //эйфория
+                    dessertName = "cv_hp-10";
+                    break;
+                case "dessert_images_3":
+                    //тфйное желание
+                    dessertName = "cv_hp-12";
+                    break;
+            }
+            return dessertName;
+        }
+
+        private string GetDrinkNameFromOrder(Sprite dessert)
+        {
+            string drinkName = "";
+            switch (dessert.name)
+            {
+                case "coffee_images_4":
+                    //air kiss
+                    drinkName = "cv_hp-7";
+                    break;
+                case "coffee_images_5":
+                    //strela
+                    drinkName = "cv_hp-9";
+
+                    break;
+                case "coffee_images_6":
+                    //эйфория
+                    drinkName = "cv_hp-11";
+                    break;
+                case "coffee_images_7":
+                    //тфйное желание
+                    drinkName = "cv_hp-13";
+                    break;
+            }
+            return drinkName;
+        }
+
+        public void MoveCharToChair()
+        {
+            _time = _helperCloud.GetComponent<Animator>().GetCurrentClipLength("cloud_hide");
+            DOVirtual.DelayedCall(_time, delegate
+            {
+                ChangeDirectionBefore(_charClient.transform.parent);
+
+                _charClient.GetComponent<Animator>().SetTrigger("Char_move_to_target");
+
+                transform.DOScale(new Vector2(-2.31f, 4.51f), 1.5f);
+                DOVirtual.DelayedCall(0.9f, delegate { _charClient.transform.ChangeOrderRecursively(30); });
+                transform.DOMove(GetPosToMove(), 1.5f).SetEase(Ease.Linear).OnComplete(delegate
+                {
+                    FlipObject(_charClient.transform.parent);
+
+                    Vector2 clientSitPos = (_chairObject.name == "client_chair_right") ? CafeSettings.clientSitPos[0] : CafeSettings.clientSitPos[1];
+
+                    transform.position = clientSitPos;
+
+                    _charClient .GetComponent<Animator>().SetTrigger("Char_idle_sit"  );
+                    _helperCloud.GetComponent<Animator>().SetTrigger("cloud_wish_show");
+
+                    if (OnReachedChair != null) OnReachedChair(this);
+                });
+            });
+        }
+
+        public void CheckGivenProduct5Plus(string givenProduct, Sprite sprite)
+        {
+            AudioPlayer.Instance.Play("galochka");
+            _processedOrders++;
+
+            if (givenProduct.Equals(_activeDessert.name))
+            {
+                //Logger.Message("Right choice");
+
+                _dessertIsGone = true;
+                _fullPayment = true;
+
+                CharTakeDessert(_activeDessert, sprite, 0, () => { CharConsumesProduct("Char_idle_eating"); });
+            }
+            else if (givenProduct.Equals(_activeCoffee.name))
+            {
+                //Logger.Message("Right choice");
+
+                _coffeeIsGone = true;
+                _fullPayment = true;
+
+                CharTakeCoffee(_activeCoffee, sprite, 0, () => { CharConsumesProduct("Char_idle_drinking"); });
+            }
+            else
+            {
+                if (givenProduct.Contains("dessert"))
+                {
+                    if (!_dessertIsGone && !_mismatchOfOne)
+                    {
+                        //Logger.Message("Wrong dessert");
+
+                        _dessertIsGone = true;
+
+                        CharTakeDessert(_activeDessert, sprite, 1, () => { CharConsumesProduct("Char_idle_eating"); });
+                        _mismatchOfOne = true;
+                    }
+                    else
+                    {
+                        _doNotCharge = true;
+
+                        GameObject activeOrder = !_coffeeIsGone ? _activeCoffee : _activeDessert;
+
+                        CharTakeDessert(activeOrder, sprite, 1, () => { CharThrowsProductAway(sprite); });
+                    }
+                }
+                else
+                {
+                    if (!_coffeeIsGone && !_mismatchOfOne)
+                    {
+                        //Logger.Message("Wrong coffee");
+
+                        _coffeeIsGone = true;
+
+                        CharTakeCoffee(_activeCoffee, sprite, 1, () => { CharConsumesProduct("Char_idle_drinking"); });
+                        _mismatchOfOne = true;
+                    }
+                    else
+                    {
+                        _doNotCharge = true;
+
+                        GameObject activeOrder = !_dessertIsGone ? _activeDessert : _activeCoffee;
+
+                        CharTakeCoffee(activeOrder, sprite, 1, () => { CharThrowsProductAway(sprite); });
+                    }
+                }
+            }
+        }
+
+        public void HideIndicators(bool offActiveOrders)
+        {
+            _helperCloud.GetComponent<Animator>().SetTrigger("cloud_wish_hide");
+            _patienceBar.transform.localScale = Vector2.zero;
+
+            if (offActiveOrders)
+            {
+                _activeDessert.SetActive(false);
+                _activeCoffee.SetActive(false);
+            }
+        }       
+
+        public void CharacterUpdate()
+        {
+            if (_decreseStart && !decreseOff)
+            {
+                if (_patienceAmount > 0)
+                {
+                    UpdatePatience();
+                    DecreesePatience();
+                }
+                else
+                {
+                    _decreseStart = false;
+
+                    _spawner.countServedClients--;
+                    ClientsFeedingController.Instance.ResetAllChoisenProduct();
+                    ClientsFeedingController.Instance.hasNextClient = false;
+
+                    HideIndicators(true);
+                    _charClient.GetComponent<Animator>().SetTrigger("Char_idle_sad");
+
+                    AudioPlayer.Instance.Play("hp-27");
+
+                    servicedFailed = true;
+                    DOVirtual.DelayedCall(0.5f, delegate
+                    {
+                        //ClientsFeedingController.Instance.MoveMachineToStartPos();
+                        ClientsFeedingController.Instance.ChangePerspectiveBack();
+                    });
+
+                    _time = _charClient.GetComponent<Animator>().GetCurrentClipLength("sad");
+                    DOVirtual.DelayedCall(_time, delegate
+                    {
+                        if (_chairObject.name == "client_chair_left") FlipObject(_charClient.transform.parent);
+                        transform.DOMove(GetPosToLeaveChar(), 3.2f).SetEase(Ease.Linear).OnComplete(delegate
+                        {                            
+                            clientIsActive = false;
+
+                            if (OnReleseClient != null) OnReleseClient(this, _startLocalScaleX, _startClientPos);
+                        });
+                    });
+                }
+            }
+        }
+
+        public void KillTween()
+        {
+            if (_tweenCallback != null)
+            {
+                if (_tweenCallback.IsActive())
+                {
+                    if (_tweenCallback.IsPlaying())
+                        _tweenCallback.Kill();
+                }
+            }            
+        }
+
+        public void Release()
+        {
+            _dessertIsGone = false;
+            _coffeeIsGone = false;
+            _mismatchOfOne = false;
+
+            OnConsumedProduct = null;
+            OnReleseClient = null;
+
+            decreseOff = false;
+            _patienceBar.transform.GetChild(2).localScale = Vector2.one;
+
+            _patienceAmount = MAX_PATIENCE;
+        }
+
+        public virtual void SetActiveObject(bool activeState)
+        {
+            gameObject.SetActive(activeState);
+        }
+        #endregion
+    }
+}

@@ -1,0 +1,148 @@
+﻿using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine.UI;
+using DG.Tweening;
+using UnityEngine.SceneManagement;
+
+public class ForestFindController : BaseFinderController
+{
+    [SerializeField]
+    private GameObject _strawberryPool,
+                       _cranberryPool,
+                       _blueberryPool,
+                       _chanterellepool,
+                       _dubovikpool,
+                       _boletuspool;
+
+
+    [SerializeField]
+    private GameObject _allFoodToFind;
+
+    private GameObject _strawberryLogo,
+                       _cranberryLogo,
+                       _blueberryLogo,
+                       _chanterelleLogo,
+                       _dubovikLogo,
+                       _boletusLogo;
+
+    private int _strawberryTargetCount,
+                _cranberryTargetCount,
+                _blueberryTargetCount,
+                _chanterelleTargetCount,
+                _dubovikTargetCount,
+                _boletusTargetCount,
+
+                _findingCranberryCount,
+                _findingStrawberryCount,
+                _findingBlueberryCount,
+                _findingChanterelleCount,
+                _findingDubovikCount,
+                _findingBoletusCount,
+
+                _foundmovingspeed = 5,
+                _timeWithoutFound = 8;
+
+    private Text _strawberryTextCount,
+                 _cranberryTextCount,
+                 _blueberryTextCount,
+                 _chanterelleTextCount,
+                 _dubovikTextCount,
+                 _boletusTextCount;
+
+    private float _lastFoundTime;
+                
+
+    private List<FindItemObject> _foodToFind=new List<FindItemObject>();
+
+    private Collider2D _dragCollider;
+
+    private bool _isReadyToFind;
+
+    //private ItemsToFind sceneItems;
+    private void Awake()
+    {       
+        _strawberryTargetCount = Random.Range(1, 5);
+        _cranberryTargetCount = Random.Range(1, 5);
+        _blueberryTargetCount = Random.Range(1, 5);
+        _chanterelleTargetCount = Random.Range(1, 5);
+        _dubovikTargetCount = Random.Range(1, 5);
+        _boletusTargetCount = Random.Range(1, 5);
+
+        //_strawberryLogo = _allFoodToFind.transform.Find(ItemsToFind.FOREST_STRAWBERRY.ToString().ToLower() + "logo").gameObject;
+        //_cranberryLogo = _allFoodToFind.transform.Find(ItemsToFind.FOREST_CRANBERRY.ToString().ToLower() + "logo").gameObject;
+        _blueberryLogo = _allFoodToFind.transform.Find(ItemsToFind.FOREST_BLUECAMPANULA.ToString().ToLower() + "logo").gameObject;
+        _chanterelleLogo = _allFoodToFind.transform.Find(ItemsToFind.FOREST_PINKSTAR.ToString().ToLower() + "logo").gameObject;
+        _dubovikLogo = _allFoodToFind.transform.Find(ItemsToFind.FOREST_BLUESTAR.ToString().ToLower() + "logo").gameObject;
+        _boletusLogo = _allFoodToFind.transform.Find(ItemsToFind.FOREST_REDASTER.ToString().ToLower() + "logo").gameObject;
+
+        //_strawberryTextCount = _allFoodToFind.transform.Find(ItemsToFind.FOREST_STRAWBERRY.ToString().ToLower() + "logo/count").gameObject.GetComponent<Text>();
+        //_cranberryTextCount = _allFoodToFind.transform.Find(ItemsToFind.FOREST_CRANBERRY.ToString().ToLower() + "logo/count").gameObject.GetComponent<Text>();
+        _blueberryTextCount = _allFoodToFind.transform.Find(ItemsToFind.FOREST_BLUECAMPANULA.ToString().ToLower() + "logo/count").gameObject.GetComponent<Text>();
+        _chanterelleTextCount= _allFoodToFind.transform.Find(ItemsToFind.FOREST_PINKSTAR.ToString().ToLower() + "logo/count").gameObject.GetComponent<Text>();
+        _dubovikTextCount = _allFoodToFind.transform.Find(ItemsToFind.FOREST_BLUESTAR.ToString().ToLower() + "logo/count").gameObject.GetComponent<Text>();
+        _boletusTextCount = _allFoodToFind.transform.Find(ItemsToFind.FOREST_REDASTER.ToString().ToLower() + "logo/count").gameObject.GetComponent<Text>();
+
+        _strawberryTextCount.text = _strawberryTargetCount.ToString();
+        _cranberryTextCount.text = _cranberryTargetCount.ToString();
+        _blueberryTextCount.text = _blueberryTargetCount.ToString();
+        _chanterelleTextCount.text = _chanterelleTargetCount.ToString();
+        _dubovikTextCount.text = _dubovikTargetCount.ToString();
+        _boletusTextCount.text = _boletusTargetCount.ToString();
+
+        InitFindItemType(_foodToFind, _boletuspool, _boletusTargetCount, _findingBoletusCount, ItemsToFind.FOREST_REDASTER, _boletusLogo.transform, _boletusTextCount);
+        InitFindItemType(_foodToFind, _dubovikpool, _dubovikTargetCount, _findingDubovikCount, ItemsToFind.FOREST_BLUESTAR, _dubovikLogo.transform, _dubovikTextCount);
+        InitFindItemType(_foodToFind, _chanterellepool, _chanterelleTargetCount, _findingChanterelleCount, ItemsToFind.FOREST_PINKSTAR, _chanterelleLogo.transform, _chanterelleTextCount);
+
+        //CreateBarryTypeOnPart(_foodToFind, _strawberryPool, _strawberryTargetCount, _findingStrawberryCount, ItemsToFind.FOREST_STRAWBERRY, _strawberryLogo, _strawberryTextCount);
+        //CreateBarryTypeOnPart(_foodToFind, _cranberryPool, _cranberryTargetCount, _findingCranberryCount, ItemsToFind.FOREST_CRANBERRY, _cranberryLogo, _cranberryTextCount);
+        //CreateBarryTypeOnPart(_foodToFind, _blueberryPool, _blueberryTargetCount, _findingBlueberryCount, ItemsToFind.FOREST_BLUEBERRIES, _blueberryLogo, _blueberryTextCount);
+
+        InitFindTypeObjects(_foodToFind, 0.75f);
+    }
+        
+
+    // Use this for initialization
+    void Start () {        
+        Camera.main.transform.DOMoveX(0, 4).SetDelay(1f).SetEase(Ease.Linear).OnComplete(() => {
+            _allFoodToFind.transform.DOMoveY(_allFoodToFind.transform.position.y - 1.5f, 2).OnComplete(()=> {
+                _isReadyToFind = true;
+                _lastFoundTime = Time.time;
+            });            
+        });
+        
+    }
+
+    
+	// Update is called once per frame
+	void Update () {
+        
+        if (_isReadyToFind)
+        {
+            if (Input.GetMouseButtonDown(0))
+            {
+                Vector2 touchToWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                _dragCollider = Physics2D.OverlapPoint(touchToWorld);
+                if (_dragCollider)
+                {
+                    _lastFoundTime = Time.time;
+                    //TouchController(_dragCollider, _foodToFind, _foundmovingspeed);
+                }
+            }
+            if (Input.GetMouseButtonUp(0))
+            {
+                _dragCollider = null;
+            }
+        }
+        if (_lastFoundTime != 0 && Time.time > _lastFoundTime + _timeWithoutFound)
+        {
+            _lastFoundTime = Time.time;
+            ShowHelpObject(FindHelpObject(_foodToFind));
+        }
+    } 
+    
+
+}
+
+

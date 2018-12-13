@@ -1,0 +1,73 @@
+﻿using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+
+public class LocalizationManager// : MonoBehaviour
+{
+    //static public LocalizationManager Instance;
+    static public bool is_ready = false;
+
+    private const string KEY = "Keys";
+
+    private static TextAsset strings;
+    public static Dictionary<string, Dictionary<string, string>> languages;
+
+    //void Awake () {
+    //	Instance = this;
+    //       Init ( );
+    //   }
+
+    public static void Init ()
+    {
+        strings = Resources.Load ( "strings" ) as TextAsset;
+        //Debug.Log ( strings );
+        List<Dictionary<string, object>> data = strings == null ? new List<Dictionary<string, object>> ( ) : CSVReader.Read ( strings );
+
+        languages = new Dictionary<string, Dictionary<string, string>> ( );
+        for (int i = 0; i < data.Count; i++)
+        {
+            string key = data [i] [KEY].ToString ( ).Trim ( );
+            if (key.Length == 0 || (key [0] == '[' && key [key.Length - 1] == ']'))
+            {
+                continue;
+            }
+            Dictionary<string, string> languages_string = new Dictionary<string, string> ( );
+            foreach (KeyValuePair<string, object> pair in data [i])
+            {
+                if (!pair.Key.Equals ( KEY ))
+                {
+                    languages_string.Add ( pair.Key.Trim ( ), pair.Value.ToString ( ).Trim ( ) );
+                }
+            }
+            languages.Add ( data [i] [KEY].ToString ( ), languages_string );
+        }
+        is_ready = true;
+        //Debug.Log ( languages );
+    }
+
+    public static string GetString (string key)
+    {
+        if (!is_ready)
+        {
+            Init ( );
+        }
+
+        if (languages.ContainsKey ( key ))
+        {
+            if (languages [key].ContainsKey ( Languages.GetLanguageName ( ) ))
+            {
+                return languages [key] [Languages.GetLanguageName ( )];
+            }
+            else
+            {
+                Debug.Log ( "WARNING: Does not exist '" + Languages.GetLanguageName ( ) + "' string for key '" + key + "'." );
+                return languages [key] ["English"];
+            }
+        }
+        else
+        {
+            Debug.Log ( "WARNING: Does not exist key '" + key + "'." );
+            return "####";
+        }
+    }
+}

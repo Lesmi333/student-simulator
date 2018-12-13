@@ -1,0 +1,381 @@
+fileFormatVersion: 2
+guid: baf869e59599a124794581399a2fae4d
+timeCreated: 1516976451
+licenseType: Free
+TextureImporter:
+  fileIDToRecycleName:
+    21300000: god_ej_0
+    21300002: god_ej_1
+    21300004: god_ej_2
+    21300006: god_ej_3
+    21300008: god_ej_4
+    21300010: god_ej_5
+    21300012: god_ej_6
+    21300014: god_ej_7
+    21300016: god_ej_8
+    21300018: god_ej_9
+    21300020: god_ej_10
+    21300022: god_ej_11
+    21300024: god_ej_12
+    21300026: god_ej_13
+    21300028: god_ej_14
+    21300030: god_ej_15
+    21300032: god_ej_16
+    21300034: god_ej_17
+    21300036: god_ej_18
+    21300038: god_ej_19
+    21300040: god_ej_20
+    21300042: god_ej_21
+    21300044: god_ej_22
+  serializedVersion: 2
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 1
+    linearTexture: 0
+    correctGamma: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+  isReadable: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 0
+  cubemapConvolution: 0
+  cubemapConvolutionSteps: 7
+  cubemapConvolutionExponent: 1.5
+  seamlessCubemap: 0
+  textureFormat: -1
+  maxTextureSize: 2048
+  textureSettings:
+    filterMode: -1
+    aniso: 16
+    mipBias: -1
+    wrapMode: 1
+  nPOTScale: 0
+  lightmap: 0
+  rGBM: 0
+  compressionQuality: 50
+  allowsAlphaSplitting: 0
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spritePixelsToUnits: 100
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  buildTargetSettings: []
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: god_ej_0
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 454
+        width: 62
+        height: 77
+      alignment: 9
+      pivot: {x: 0.89337385, y: 0.92105144}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: god_ej_1
+      rect:
+        serializedVersion: 2
+        x: 106
+        y: 395
+        width: 206
+        height: 128
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: god_ej_2
+      rect:
+        serializedVersion: 2
+        x: 343
+        y: 481
+        width: 54
+        height: 47
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: god_ej_3
+      rect:
+        serializedVersion: 2
+        x: 414
+        y: 494
+        width: 38
+        height: 29
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: god_ej_4
+      rect:
+        serializedVersion: 2
+        x: 498
+        y: 448
+        width: 56
+        height: 78
+      alignment: 9
+      pivot: {x: 0.048615046, y: 0.037017822}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: god_ej_5
+      rect:
+        serializedVersion: 2
+        x: 347
+        y: 421
+        width: 54
+        height: 54
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: god_ej_6
+      rect:
+        serializedVersion: 2
+        x: 414
+        y: 425
+        width: 38
+        height: 46
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: god_ej_7
+      rect:
+        serializedVersion: 2
+        x: 369
+        y: 395
+        width: 17
+        height: 18
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: god_ej_8
+      rect:
+        serializedVersion: 2
+        x: 416
+        y: 395
+        width: 18
+        height: 18
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: god_ej_9
+      rect:
+        serializedVersion: 2
+        x: 13
+        y: 270
+        width: 126
+        height: 115
+      alignment: 9
+      pivot: {x: 0.38253146, y: 0.19432639}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: god_ej_10
+      rect:
+        serializedVersion: 2
+        x: 373
+        y: 347
+        width: 72
+        height: 28
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: god_ej_11
+      rect:
+        serializedVersion: 2
+        x: 160
+        y: 273
+        width: 48
+        height: 38
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: god_ej_12
+      rect:
+        serializedVersion: 2
+        x: 214
+        y: 273
+        width: 49
+        height: 36
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: god_ej_13
+      rect:
+        serializedVersion: 2
+        x: 272
+        y: 272
+        width: 25
+        height: 39
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: god_ej_14
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 33
+        width: 327
+        height: 229
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: god_ej_15
+      rect:
+        serializedVersion: 2
+        x: 331
+        y: 38
+        width: 185
+        height: 123
+      alignment: 9
+      pivot: {x: 0.22998096, y: 0.22172844}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: god_ej_16
+      rect:
+        serializedVersion: 2
+        x: 536
+        y: 89
+        width: 28
+        height: 26
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: god_ej_17
+      rect:
+        serializedVersion: 2
+        x: 574
+        y: 91
+        width: 34
+        height: 23
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: god_ej_18
+      rect:
+        serializedVersion: 2
+        x: 623
+        y: 94
+        width: 24
+        height: 19
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: god_ej_19
+      rect:
+        serializedVersion: 2
+        x: 538
+        y: 66
+        width: 49
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: god_ej_20
+      rect:
+        serializedVersion: 2
+        x: 606
+        y: 64
+        width: 35
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: god_ej_21
+      rect:
+        serializedVersion: 2
+        x: 656
+        y: 64
+        width: 31
+        height: 14
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: god_ej_22
+      rect:
+        serializedVersion: 2
+        x: 538
+        y: 37
+        width: 49
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    outline: []
+  spritePackingTag: 
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

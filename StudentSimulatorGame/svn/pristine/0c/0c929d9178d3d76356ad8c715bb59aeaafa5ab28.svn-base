@@ -1,0 +1,116 @@
+﻿using UnityEngine;
+using System.Collections;
+using PSV_Tutorials;
+using DG.Tweening;
+
+public class TapNHold : TutorialPrimitiveBase
+{
+	private Tween tween;
+	private Vector3 tapPosition;
+	private Transform parent;
+
+	/// <summary>
+	/// Creates a Tap gesture and holds it down in the position.   	
+	/// </summary>
+	/// <param name="tapPosition"> Position of the TapDown </param>
+	/// <param name="duration"> duration of the hold (-1 for infinity)</param>
+	public TapNHold (Vector3 tapPosition, float duration = -1)
+	{
+		this.duration = duration;
+		this.tapPosition = tapPosition;
+		onStepCompleteCallbacks.Add (() => finger.SetAnimation (FingerAnimations.Tap_Down, FingerAnimations.Tap_Down_Idle, loop: true));
+	}
+
+	/// <summary>
+	/// Creates a Tap gesture and holds it down in the Transform's position.   	
+	/// </summary>
+	/// <param name="tapTransform"> Transform of the TapDown </param>
+	/// <param name="duration"> duration of the hold (-1 for infinity)</param>
+	public TapNHold (Transform tapTransform, float duration = -1)
+		: this (tapTransform.position, duration)
+	{
+	}
+
+	public override void Kill ()
+	{
+		tween.KillAndClear ();
+	}
+
+	protected override void CreateTweens ()
+	{
+		base.CreateTweens ();
+		finger.transform.position = tapPosition;
+		Kill ();
+		if (duration < 0)
+		{
+			duration = FingerUtils.INFINITY;
+		}
+		Debug.Log (duration);
+		tween = DOVirtual.Float (0, 1, duration, delegate
+			{
+			})
+			.SetAs (tParams ());
+	}
+
+	protected override void DefineAnimation ()
+	{
+		base.DefineAnimation ();
+		finger.SetAnimation (FingerAnimations.Tap_Down, FingerAnimations.Tap_Down_Idle, loop: true);
+		if (parent != null)
+		{
+			finger.transform.parent = parent;
+		}
+	}
+
+	public override void Pause ()
+	{
+		finger.Pause ();
+	}
+
+	public override void Complete ()
+	{
+		Kill ();
+		StartCallbacks (onCompleteCallbacks);
+	}
+
+	public  TapNHold OnComplete (TweenCallback callback)
+	{
+		return base.OnComplete<TapNHold> (callback);
+	}
+
+	public TapNHold SetDelay (float delay)
+	{
+		return base.SetDelay<TapNHold> (delay);
+	}
+	/// <summary>
+	/// Makes the gesture follow parent position.   	
+	/// </summary>
+	public  TapNHold SetParent (Transform parent)
+	{
+		this.parent = parent;
+		onUpdateCallbacks.Add (() => finger.transform.position = parent.position);
+		return this;
+	}
+
+	public  TapNHold OnPause (TweenCallback callback)
+	{
+		return base.OnPause<TapNHold> (callback);
+	}
+
+	public  TapNHold OnStart (TweenCallback callback)
+	{
+		return base.OnStart<TapNHold> (callback);
+	}
+
+	public TapNHold SetLoops (int cycles, LoopType type)
+	{
+		return  base.SetLoops<TapNHold> (cycles: cycles, type: type);
+	}
+
+	public  TapNHold OnUpdate (TweenCallback callback)
+	{
+		onUpdateCallbacks.Add (callback);
+		return this;
+	}
+		
+}

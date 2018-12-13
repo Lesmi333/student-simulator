@@ -1,0 +1,46 @@
+﻿using UnityEngine;
+using DG.Tweening;
+using PSV_Prototype;
+
+public class SettingsPanel :DialoguePanel
+{
+
+	public delegate void Callback (bool is_shown);
+	public static event Callback OnSettingsShown;
+
+
+	protected override void OnEnable ()
+	{
+		base.OnEnable ( );
+	}
+
+	protected override void OnDisable ()
+	{
+		base.OnDisable ( );
+	}
+
+
+
+	protected override void ShowPannel (bool param, bool use_tween = true)
+	{
+		base.ShowPannel ( param, use_tween );
+
+		if (OnSettingsShown != null)
+		{
+			OnSettingsShown ( param );
+		}
+	}
+
+
+	protected override void ActivatePanelObjects (bool param)
+	{
+		base.ActivatePanelObjects ( param );
+	}
+
+
+	public void OpenSettingsPannel ()
+	{
+		ShowPannel ( !pannel_shown );
+	}
+
+}

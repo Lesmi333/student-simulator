@@ -1,0 +1,380 @@
+﻿using UnityEngine;
+using System.Linq;
+using System.Collections.Generic;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+using DG.Tweening;
+
+public class BaseFinder : BaseSceneController { 
+
+	protected delegate void OnStateChanged(FinderStates state);
+
+	protected event OnStateChanged OnStateChangedEvent;
+
+	protected enum FinderStates {
+		STATE_TOUCH_ON_FIND_OBJECT,
+		NONE,
+	}
+
+	private FinderStates _state;
+
+	protected FinderStates State {
+		get { return _state; }
+		set {
+			_state = value;
+			OnStateChangedEvent(value);
+		}
+	}
+
+	protected FindItemObject _currentTypeFindingObject;
+	protected GameObject _currentFindingObject;
+
+	private int RandomItemObjectsCount(int itemTargetCount) {
+		int randItemCount = Random.Range(1, 5);
+		while (true) {
+			if (randItemCount >= itemTargetCount) {
+				break;
+			}
+			else
+				randItemCount = Random.Range(1, 5);
+		}
+		return randItemCount;
+	}
+
+	public void InitFindTypeObjects(List<FindItemObject> findTypesPool, float radius) {
+		foreach (FindItemObject findType in findTypesPool) {
+			int currentObjCount = 0;
+			int thisTypeRandCount = RandomItemObjectsCount(findType.targetFindingCount);
+
+			if (currentObjCount < thisTypeRandCount) {
+				do {
+					var randObject = Random.Range(0, findType.AllItemObjects.Count);
+					if (findType.typeOfItem != ItemsToFind.FOREST_BLUECAMPANULA /*  && findType.typeOfItem != ItemsToFind.FOREST_CRANBERRY*/) {
+						if (!findType.AllItemObjects[randObject].activeSelf && Physics2D.OverlapCircleAll(findType.AllItemObjects[randObject].transform.position, radius).Length == 0) {
+							findType.ItemObjectsOnSceene.Add(findType.AllItemObjects[randObject]);
+							findType.AllItemObjects[randObject].SetActive(true);
+							currentObjCount++;
+						}
+						else {
+							randObject = Random.Range(0, findType.AllItemObjects.Count);
+						}
+					}
+					else if (findType.typeOfItem == ItemsToFind.FOREST_BLUECAMPANULA /* | findType.typeOfItem == ItemsToFind.FOREST_CRANBERRY*/) {
+						if (!findType.AllItemObjects[randObject].activeSelf && Physics2D.OverlapCircleAll(findType.AllItemObjects[randObject].transform.position, radius).Length == 0 &&
+							findType.AllItemObjects[randObject].name.Contains("bush")) {
+							findType.AllItemObjects[randObject].SetActive(true);
+							for (int i = 0; i < findType.AllItemObjects[randObject].transform.childCount; i++) {
+								findType.ItemObjectsOnSceene.Add(findType.AllItemObjects[randObject].transform.GetChild(i).gameObject);
+								findType.AllItemObjects[randObject].transform.GetChild(i).gameObject.SetActive(true);
+							}
+							currentObjCount++;
+						}
+						else
+							randObject = Random.Range(0, findType.AllItemObjects.Count);
+					}
+
+				}
+				while (currentObjCount < thisTypeRandCount);
+			}
+		}
+	}
+
+	public void InitFindTypeObjectsFixedCounts(List<FindItemObject> findTypesPool, float radius) {
+		foreach (FindItemObject findType in findTypesPool) {
+			int currentObjCount = 0;
+			int thisTypeRandCount = findType.targetFindingCount;
+
+			if (currentObjCount < thisTypeRandCount) {
+				do {
+					var randObject = Random.Range(0, findType.AllItemObjects.Count);
+					if (findType.typeOfItem != ItemsToFind.FOREST_BLUECAMPANULA/*  && findType.typeOfItem != ItemsToFind.FOREST_CRANBERRY*/) {
+						if (!findType.AllItemObjects[randObject].activeSelf && Physics2D.OverlapCircleAll(findType.AllItemObjects[randObject].transform.position, radius).Length == 0) {
+							findType.ItemObjectsOnSceene.Add(findType.AllItemObjects[randObject]);
+							findType.AllItemObjects[randObject].SetActive(true);
+							currentObjCount++;
+						}
+						else {
+							randObject = Random.Range(0, findType.AllItemObjects.Count);
+						}
+					}
+					else if (findType.typeOfItem == ItemsToFind.FOREST_BLUECAMPANULA/* | findType.typeOfItem == ItemsToFind.FOREST_CRANBERRY*/) {
+						if (!findType.AllItemObjects[randObject].activeSelf && Physics2D.OverlapCircleAll(findType.AllItemObjects[randObject].transform.position, radius).Length == 0 &&
+							 findType.AllItemObjects[randObject].name.Contains("bush")) {
+							findType.AllItemObjects[randObject].SetActive(true);
+							for (int i = 0; i < findType.AllItemObjects[randObject].transform.childCount; i++) {
+								findType.ItemObjectsOnSceene.Add(findType.AllItemObjects[randObject].transform.GetChild(i).gameObject);
+								findType.AllItemObjects[randObject].transform.GetChild(i).gameObject.SetActive(true);
+							}
+							currentObjCount++;
+						}
+						else
+							randObject = Random.Range(0, findType.AllItemObjects.Count);
+					}
+
+				}
+				while (currentObjCount < thisTypeRandCount);
+			}
+		}
+	}
+
+	public void InitFindTypeObjects(List<FindItemObject> findTypesPool) {
+		foreach (FindItemObject findType in findTypesPool) {
+			int currentObjCount = 0;
+			int thisTypeRandCount = RandomItemObjectsCount(findType.targetFindingCount);
+
+			if (currentObjCount < thisTypeRandCount) {
+				do {
+					var randObject = Random.Range(0, findType.AllItemObjects.Count);
+					if (!findType.AllItemObjects[randObject].activeSelf) {
+						findType.ItemObjectsOnSceene.Add(findType.AllItemObjects[randObject]);
+						findType.AllItemObjects[randObject].SetActive(true);
+						currentObjCount++;
+					}
+					else {
+						randObject = Random.Range(0, findType.AllItemObjects.Count);
+					}
+
+				}
+				while (currentObjCount < thisTypeRandCount);
+			}
+		}
+	}
+
+	public void InitFindItemType(List<FindItemObject> allTypesOfLevelItems, GameObject poolParent, int targetCount, int currentFinding, ItemsToFind typeOfItem, Transform target, Text textTargetCount = null) {
+		FindItemObject ItemType = new FindItemObject(targetCount, currentFinding, typeOfItem, target, textTargetCount);
+		for (int i = 0; i < poolParent.transform.childCount; i++) {
+			ItemType.AllItemObjects.Add(poolParent.transform.GetChild(i).gameObject);
+		}
+		allTypesOfLevelItems.Add(ItemType);
+	}
+
+	public void BarryToPool(List<FindItemObject> allTypesOfLevelItems, GameObject poolParent, int targetCount, int currentFinding, ItemsToFind typeOfItem, Transform target, Text textTargetCount) {
+		if (!FindItemAlreadyCreated(allTypesOfLevelItems, typeOfItem)) {
+			FindItemObject ItemType = new FindItemObject(targetCount, currentFinding, typeOfItem, target, textTargetCount);
+
+			for (int i = 0; i < poolParent.transform.childCount; i++) {
+				ItemType.AllItemObjects.Add(poolParent.transform.GetChild(i).gameObject);
+				for (int k = 0; k < poolParent.transform.GetChild(i).transform.childCount; k++) {
+					ItemType.AllItemObjects.Add(poolParent.transform.GetChild(i).transform.GetChild(k).gameObject);
+				}
+			}
+			allTypesOfLevelItems.Add(ItemType);
+		}
+		else {
+			var currentType = GetFindItemType(allTypesOfLevelItems, typeOfItem);
+			currentType.AllItemObjects.Clear();
+			for (int i = 0; i < poolParent.transform.childCount; i++) {
+				currentType.AllItemObjects.Add(poolParent.transform.GetChild(i).gameObject);
+				for (int k = 0; k < poolParent.transform.GetChild(i).transform.childCount; k++) {
+					currentType.AllItemObjects.Add(poolParent.transform.GetChild(i).transform.GetChild(k).gameObject);
+				}
+			}
+		}
+	}
+
+	public Tween TouchController(Collider2D _touchedCollider, List<FindItemObject> ItemsToFindList, bool canvasToParent = false) {
+		if (_touchedCollider.name.ToLower().Contains(SceneManager.GetActiveScene().name.ToLower().Substring(0, 4))) {
+			foreach (var itemType in ItemsToFindList) {
+				if (_touchedCollider.name.ToLower().Contains(itemType.typeOfItem.ToString().ToLower())) {
+					foreach (GameObject typeObject in itemType.AllItemObjects) {
+						if (_touchedCollider.name.ToLower() == typeObject.name.ToLower() & itemType.targetFindingCount > 0) {
+							if (itemType.targetFindingCount > itemType.currentFindingCount) {
+
+								_currentTypeFindingObject = itemType;
+								_currentFindingObject = typeObject;
+
+								return DOVirtual.DelayedCall(0, () => { });
+							}
+						}
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+	public virtual Tween FindingItemObject(float itemMovingspeed) {
+		var currentObjectType = _currentTypeFindingObject;
+		var currentObject = _currentFindingObject;
+
+		currentObjectType.incrementCurrentCount();
+		currentObject.GetComponent<CircleCollider2D>().enabled = false;
+		Vector3 target = new Vector3(currentObjectType.itemLogoTarget.position.x, currentObjectType.itemLogoTarget.position.y, 0);
+		float distance = Vector3.Distance(currentObject.transform.position, target);
+		float punchDuration = 1;
+		float moveDuration = distance / itemMovingspeed;
+		currentObject.GetComponent<SpriteRenderer>().sortingOrder += 15;
+
+		
+
+		Sequence find = DOTween.Sequence();
+		var objectScale = currentObject.transform.localScale;
+		find.Append(currentObject.transform.DOPunchScale(new Vector3(objectScale.x + 0.5f, objectScale.y + 0.5f, 1), punchDuration, 0, 0)).SetEase(Ease.Linear)
+			.Append(currentObject.transform.DOMove(target, moveDuration))
+			.OnComplete(() => {
+				OnObjectTaken(currentObjectType, currentObject);
+			});
+
+		return DOVirtual.DelayedCall(punchDuration + moveDuration, (() => {}));
+	}
+
+	protected bool IsAllObjectsFound(List<FindItemObject> ItemsToFindList) {
+		for (int i = 0; i < ItemsToFindList.Count; i++) {
+			if (!ItemsToFindList[i].ItemIsFound) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public void OnObjectTaken(FindItemObject currentObjectType, GameObject currentObject, bool moveUp = true) {
+		currentObject.SetActive(false);
+		currentObjectType.decrementTargetCount();
+		currentObjectType.decrementCurrentCount();
+		currentObjectType.UpdateObjectsCound();
+
+		if(currentObjectType.targetFindingCount <= 0) {
+			currentObjectType.ItemIsFound = true;
+			if(moveUp) {
+				currentObjectType.itemLogoTarget.DOMoveY(currentObjectType.itemLogoTarget.position.y + 3, 1);
+			}
+		}
+	}
+
+	public void ShowHelpObject(GameObject helpItemObject) {
+		if (helpItemObject) {
+			Sequence help = DOTween.Sequence();
+			GameObject illuminator = helpItemObject.transform.GetChild(0).gameObject;
+			helpItemObject.GetComponent<SpriteRenderer>().sortingOrder += 15;
+			illuminator.GetComponent<SpriteRenderer>().sortingOrder += 14;
+
+			help.Append(helpItemObject.transform.DOPunchScale(new Vector3(1.1f, 1.1f, 1.1f), 0.5f, 0, 0)).OnStart(() => { illuminator.SetActive(true); }).
+				 Append(helpItemObject.transform.DOPunchScale(new Vector3(1.1f, 1.1f, 1.1f), 0.5f, 0, 0)).
+				 Append(helpItemObject.transform.DOPunchScale(new Vector3(1.1f, 1.1f, 1.1f), 0.5f, 0, 0).OnComplete(() => {
+					 illuminator.SetActive(false);
+					 helpItemObject.GetComponent<SpriteRenderer>().sortingOrder -= 15;
+					 illuminator.GetComponent<SpriteRenderer>().sortingOrder -= 14;
+				 }));
+		}
+	}
+
+	public GameObject FindHelpObject(List<FindItemObject> _allLevelItems) {
+		if (AvaliableWasntFindItem(_allLevelItems)) {
+			FindItemObject helpType = _allLevelItems.Last(item => !item.ItemIsFound);
+			return helpType.ItemObjectsOnSceene.First(helpTypeObject => helpTypeObject.activeSelf);
+		}
+		else
+			return null;
+	}
+
+	private bool AvaliableWasntFindItem(List<FindItemObject> _allLevelItems) {
+		for (int i = 0; i < _allLevelItems.Count; i++) {
+			if (!_allLevelItems[i].ItemIsFound) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public void InitFindTypeObjectsOnPart(List<FindItemObject> findTypesPool, float radius) {
+		foreach (FindItemObject findType in findTypesPool) {
+			int currentObjCount = 0;
+			int thisTypeRandCount = RandomItemObjectsCount(findType.targetFindingCount);
+
+			if (currentObjCount < 1) {
+				do {
+					var randObject = Random.Range(0, findType.AllItemObjects.Count);
+					if (findType.typeOfItem != ItemsToFind.FOREST_BLUECAMPANULA /* && findType.typeOfItem != ItemsToFind.FOREST_CRANBERRY*/) {
+						if (!findType.AllItemObjects[randObject].activeSelf && Physics2D.OverlapCircleAll(findType.AllItemObjects[randObject].transform.position, radius).Length == 0) {
+							findType.ItemObjectsOnSceene.Add(findType.AllItemObjects[randObject]);
+							findType.AllItemObjects[randObject].SetActive(true);
+							currentObjCount++;
+						}
+						else {
+							randObject = Random.Range(0, findType.AllItemObjects.Count);
+						}
+					}
+					else if (findType.typeOfItem == ItemsToFind.FOREST_BLUECAMPANULA /* | findType.typeOfItem == ItemsToFind.FOREST_CRANBERRY*/) {
+						if (!findType.AllItemObjects[randObject].activeSelf && Physics2D.OverlapCircleAll(findType.AllItemObjects[randObject].transform.position, radius).Length == 0 &&
+							 findType.AllItemObjects[randObject].name.Contains("bush")) {
+							findType.AllItemObjects[randObject].SetActive(true);
+							for (int i = 0; i < findType.AllItemObjects[randObject].transform.childCount; i++) {
+								findType.ItemObjectsOnSceene.Add(findType.AllItemObjects[randObject].transform.GetChild(i).gameObject);
+								findType.AllItemObjects[randObject].transform.GetChild(i).gameObject.SetActive(true);
+							}
+							currentObjCount++;
+						}
+						else
+							randObject = Random.Range(0, findType.AllItemObjects.Count);
+					}
+
+				}
+				while (currentObjCount < 1);
+			}
+		}
+	}
+
+	public void InitFindItemTypeOnPart(List<FindItemObject> allTypesOfLevelItems, GameObject poolParent, int targetCount, int currentFinding, ItemsToFind typeOfItem, Transform target, Text textTargetCount = null) {
+		if (!FindItemAlreadyCreated(allTypesOfLevelItems, typeOfItem)) {
+			FindItemObject ItemType = new FindItemObject(targetCount, currentFinding, typeOfItem, target, textTargetCount);
+			for (int i = 0; i < poolParent.transform.childCount; i++) {
+				ItemType.AllItemObjects.Add(poolParent.transform.GetChild(i).gameObject);
+			}
+			allTypesOfLevelItems.Add(ItemType);
+		}
+		else {
+			var currentType = GetFindItemType(allTypesOfLevelItems, typeOfItem);
+			currentType.AllItemObjects.Clear();
+			for (int i = 0; i < poolParent.transform.childCount; i++) {
+				currentType.AllItemObjects.Add(poolParent.transform.GetChild(i).gameObject);
+			}
+		}
+	}
+
+	private FindItemObject GetFindItemType(List<FindItemObject> allTypesOfLevelItems, ItemsToFind typeOfItem) {
+		return allTypesOfLevelItems.First(type => type.itemTypeName.Contains(typeOfItem.ToString()));
+	}
+
+	private bool FindItemAlreadyCreated(List<FindItemObject> allTypesOfLevelItems, ItemsToFind typeOfItem) {
+		return allTypesOfLevelItems.Any(type => type.itemTypeName.Contains(typeOfItem.ToString()));
+	}
+
+	public class FindItemObject
+	{
+		public List<GameObject> AllItemObjects = new List<GameObject>();
+		public List<GameObject> ItemObjectsOnSceene = new List<GameObject>();
+		public bool ItemIsFound;
+		public int targetFindingCount;
+		public int currentFindingCount;
+		public ItemsToFind typeOfItem;
+		public Transform itemLogoTarget;
+		public Text TextCount;
+		public string itemTypeName { get; private set; }
+
+		public FindItemObject(int targetValue, int currentFinding, ItemsToFind itemType, Transform target, Text textcount) {
+			TextCount = textcount;
+			targetFindingCount = targetValue;
+			currentFindingCount = currentFinding;
+			typeOfItem = itemType;
+			itemLogoTarget = target;
+			itemTypeName = itemType.ToString();
+
+		}
+		public void decrementCurrentCount() {
+			currentFindingCount--;
+		}
+		public void incrementCurrentCount() {
+			currentFindingCount++;
+		}
+		public void decrementTargetCount() {
+			targetFindingCount--;
+		}
+		public void incrementTargetCount() {
+			targetFindingCount++;
+		}
+
+		public void UpdateObjectsCound() {
+			TextCount.text = targetFindingCount.ToString();
+		}
+	}
+}

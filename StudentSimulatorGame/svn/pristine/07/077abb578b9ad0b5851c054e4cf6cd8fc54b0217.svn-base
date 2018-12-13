@@ -1,0 +1,592 @@
+﻿using UnityEngine;
+using System.Collections.Generic;
+using PSV_Prototype;
+using DG.Tweening;
+using Extensions;
+
+public class LevelSelectionController : BaseSceneController
+{
+
+    [SerializeField]
+    private bool _isOnDebug;
+    [SerializeField]
+    private Transform _circusLevel;
+    [SerializeField]
+    private Transform _fairLevel;
+    [SerializeField]
+    private Transform _forestLevel;
+    [SerializeField]
+    private Transform _cafeLevel;
+    [SerializeField]
+    private Transform _beachLevel;
+
+    /// <summary>
+    /// Wheel Transform.
+    /// </summary>
+    [SerializeField]
+    private Transform _wheel;
+    /// <summary>
+    /// Wheel's cabins.
+    /// </summary>
+    private Transform _cabinsParent;
+
+    [SerializeField]
+    private Sprite _activeStarSprite;
+    [SerializeField]
+    private Sprite _inactiveStarSprite;
+
+    private List<Location> _locations;
+
+    private string _starsName = "Stars";
+
+    private string _feedingStarName = "FeedingStar";
+    private string _finderStarName = "FinderStar";
+    private string _sorterStarName = "SorterStar";
+
+    private Dictionary<GameType, string> _nameByGameType;
+
+    private string _lockerName = "Locker";
+    private static bool _saidIntro = false;
+
+    private string _logoName = "Logo";
+    private string _logoWbName = "Logo_wb";
+    private string _logoColorName = "Logo_color";
+
+    public  Stack<Tween> destroyableTweens { get; private set; }
+
+    private Tween _autoTransitionTween;
+
+    [SerializeField]
+    private Sprite _cafeFeedingActive;
+    [SerializeField]
+    private Sprite _cafeFeedingUnactive;
+    [SerializeField]
+    private Sprite _cafeFinderActive;
+    [SerializeField]
+    private Sprite _cafeFinderUnactive;
+    [SerializeField]
+    private Sprite _cafeSorterActive;
+    [SerializeField]
+    private Sprite _cafeSorterUnactive;
+    [SerializeField]
+    private Sprite _forestFeedingActive;
+    [SerializeField]
+    private Sprite _forestFeedingUnactive;
+    [SerializeField]
+    private Sprite _forestFinderActive;
+    [SerializeField]
+    private Sprite _forestFinderUnactive;
+    [SerializeField]
+    private Sprite _forestSorterActive;
+    [SerializeField]
+    private Sprite _forestSorterUnactive;
+    [SerializeField]
+    private Sprite _fairFeedingActive;
+    [SerializeField]
+    private Sprite _fairFeedingUnactive;
+    [SerializeField]
+    private Sprite _fairFinderActive;
+    [SerializeField]
+    private Sprite _fairFinderUnactive;
+    [SerializeField]
+    private Sprite _fairSorterActive;
+    [SerializeField]
+    private Sprite _fairSorterUnactive;
+    [SerializeField]
+    private Sprite _beachFeedingActive;
+    [SerializeField]
+    private Sprite _beachFeedingUnactive;
+    [SerializeField]
+    private Sprite _beachFinderActive;
+    [SerializeField]
+    private Sprite _beachFinderUnactive;
+    [SerializeField]
+    private Sprite _beachSorterActive;
+    [SerializeField]
+    private Sprite _beachSorterUnactive;
+    [SerializeField]
+    private Sprite _circusFeedingActive;
+    [SerializeField]
+    private Sprite _circusFeedingUnactive;
+    [SerializeField]
+    private Sprite _circusFinderActive;
+    [SerializeField]
+    private Sprite _circusFinderUnactive;
+    [SerializeField]
+    private Sprite _circusSorterActive;
+    [SerializeField]
+    private Sprite _circusSorterUnactive;
+
+    private Scenes GetSceneByLocationAndGame(LocationType locationType, GameType gameType)
+    {
+        switch (locationType)
+        {
+            case LocationType.LOCATION_CAFE:
+                switch (gameType)
+                {
+                    case GameType.GAME_FEEDER:
+                        return Scenes.CafeFeeding;
+                    case GameType.GAME_FINDER:
+                        return Scenes.CafeFind;
+                    case GameType.GAME_SORTER:
+                        return Scenes.CafeSorter;
+                    default:
+                        return Scenes.InitScene - 100;
+                }
+            case LocationType.LOCATION_FOREST:
+                switch (gameType)
+                {
+                    case GameType.GAME_FEEDER:
+                        return Scenes.ForestFeeding;
+                    case GameType.GAME_FINDER:
+                        return Scenes.ForestFind;
+                    case GameType.GAME_SORTER:
+                        return Scenes.ForestSorter;
+                    default:
+                        return Scenes.InitScene - 100;
+                }
+            case LocationType.LOCATION_FAIR:
+                switch (gameType)
+                {
+                    case GameType.GAME_FEEDER:
+                        return Scenes.FairFeeding;
+                    case GameType.GAME_FINDER:
+                        return Scenes.FairFind;
+                    case GameType.GAME_SORTER:
+                        return Scenes.FairSorter;
+                    default:
+                        throw new System.Exception("Game type isn't recognized.");
+                }
+            case LocationType.LOCATION_BEACH:
+                switch (gameType)
+                {
+                    case GameType.GAME_FEEDER:
+                        return Scenes.BeachFeeding;
+                    case GameType.GAME_FINDER:
+                        return Scenes.BeachFind;
+                    case GameType.GAME_SORTER:
+                        return Scenes.BeachSorter;
+                    default:
+                        return Scenes.InitScene - 100;
+                }
+            case LocationType.LOCATION_CIRCUS:
+                switch (gameType)
+                {
+                    case GameType.GAME_FEEDER:
+                        return Scenes.CircusFeeding;
+                    case GameType.GAME_FINDER:
+                        return Scenes.CircusFind;
+                    case GameType.GAME_SORTER:
+                        return Scenes.CircusSorter;
+                    default:
+                        return Scenes.InitScene - 100;
+                }
+            default:
+                return Scenes.InitScene - 100;
+        }
+    }
+
+    private void GetLocationAndGameByScene(Scenes scene, ref LocationType locationType, ref GameType gameType)
+    {
+        foreach (LocationType locationTypeLocal in System.Enum.GetValues(typeof(LocationType)))
+        {
+            foreach (GameType gameTypeLocal in System.Enum.GetValues(typeof(GameType)))
+            {
+                if (scene == GetSceneByLocationAndGame(locationTypeLocal, gameTypeLocal))
+                {
+                    locationType = locationTypeLocal;
+                    gameType = gameTypeLocal;
+                }
+            }
+        }
+    }
+
+    private Sprite GetSpriteByGame(bool active, GameType gameType, LocationType locationType)
+    {
+        switch (locationType)
+        {
+            case LocationType.LOCATION_CAFE:
+                switch (gameType)
+                {
+                    case GameType.GAME_FEEDER:
+                        return active ? _cafeFeedingActive : _cafeFeedingUnactive;
+                    case GameType.GAME_FINDER:
+                        return active ? _cafeFinderActive : _cafeFinderUnactive;
+                    case GameType.GAME_SORTER:
+                        return active ? _cafeSorterActive : _cafeSorterUnactive;
+                    default:
+                        throw new System.Exception("Game type isn't recognized.");
+                }
+            case LocationType.LOCATION_FOREST:
+                switch (gameType)
+                {
+                    case GameType.GAME_FEEDER:
+                        return active ? _forestFeedingActive : _forestFeedingUnactive;
+                    case GameType.GAME_FINDER:
+                        return active ? _forestFinderActive : _forestFinderUnactive;
+                    case GameType.GAME_SORTER:
+                        return active ? _forestSorterActive : _forestSorterUnactive;
+                    default:
+                        throw new System.Exception("Game type isn't recognized.");
+                }
+            case LocationType.LOCATION_FAIR:
+                switch (gameType)
+                {
+                    case GameType.GAME_FEEDER:
+                        return active ? _fairFeedingActive : _fairFeedingUnactive;
+                    case GameType.GAME_FINDER:
+                        return active ? _fairFinderActive : _fairFinderUnactive;
+                    case GameType.GAME_SORTER:
+                        return active ? _fairSorterActive : _fairSorterUnactive;
+                    default:
+                        throw new System.Exception("Game type isn't recognized.");
+                }
+            case LocationType.LOCATION_BEACH:
+                switch (gameType)
+                {
+                    case GameType.GAME_FEEDER:
+                        return active ? _beachFeedingActive : _beachFeedingUnactive;
+                    case GameType.GAME_FINDER:
+                        return active ? _beachFinderActive : _beachFinderUnactive;
+                    case GameType.GAME_SORTER:
+                        return active ? _beachSorterActive : _beachSorterUnactive;
+                    default:
+                        throw new System.Exception("Game type isn't recognized.");
+                }
+            case LocationType.LOCATION_CIRCUS:
+                switch (gameType)
+                {
+                    case GameType.GAME_FEEDER:
+                        return active ? _circusFeedingActive : _circusFeedingUnactive;
+                    case GameType.GAME_FINDER:
+                        return active ? _circusFinderActive : _circusFinderUnactive;
+                    case GameType.GAME_SORTER:
+                        return active ? _circusSorterActive : _circusSorterUnactive;
+                    default:
+                        throw new System.Exception("Game type isn't recognized.");
+                }
+            default:
+                throw new System.Exception("Location type isn't recognized.");
+        }
+    }
+
+    private Location GetLevelInfo(LocationType locationType, Transform transform)
+    {
+        var loadableDictionary = new Dictionary<GameType, Star>();
+        Transform logoParent = transform.Find(_logoName);
+        //GameObject locker = transform.Find(_lockerName).gameObject;
+        //GameObject wbLogo = logoParent.Find(_logoWbName).gameObject;
+        //GameObject colorLogo = logoParent.Find(_logoColorName).gameObject;
+        Location menuLocation = new Location(locationType, /*locker, wbLogo, colorLogo,*/ loadableDictionary, this);
+        Transform starsTransform = transform.Find(_starsName);
+        GameType[] enumNames = (GameType[])System.Enum.GetValues(typeof(GameType));
+        int length = enumNames.Length;
+        for (int i = 0; i < length; i++)
+        {
+            GameType gameType = enumNames[i];
+            Transform transformByName = starsTransform.Find(_nameByGameType[gameType]);
+
+            Sprite activeStarSprite = GetSpriteByGame(true, gameType, locationType);
+            Sprite unactiveStarSprite = GetSpriteByGame(false, gameType, locationType);
+
+            SpriteRenderer spriteRenderer = transformByName.GetComponent<SpriteRenderer>();
+            Collider2D collider2d = transformByName.GetComponent<Collider2D>();
+            loadableDictionary.Add(gameType, new Star(menuLocation, GetSceneByLocationAndGame(locationType, gameType), gameType, transformByName, spriteRenderer, collider2d, activeStarSprite, unactiveStarSprite, Vector3.one * 0.19f, Vector3.up * 0.1f, 0.9f, true));
+        }
+        return menuLocation;
+    }
+
+    private void LoadNames()
+    {
+        _nameByGameType = new Dictionary<GameType, string>();
+        _nameByGameType.Add(GameType.GAME_FEEDER, _feedingStarName);
+        _nameByGameType.Add(GameType.GAME_FINDER, _finderStarName);
+        _nameByGameType.Add(GameType.GAME_SORTER, _sorterStarName);
+    }
+
+    private void LoadLevels()
+    {
+        _locations = new List<Location>();
+
+        _locations.Add(GetLevelInfo(LocationType.LOCATION_BEACH, _beachLevel));
+        _locations.Add(GetLevelInfo(LocationType.LOCATION_CAFE, _cafeLevel));
+        _locations.Add(GetLevelInfo(LocationType.LOCATION_CIRCUS, _circusLevel));
+        _locations.Add(GetLevelInfo(LocationType.LOCATION_FAIR, _fairLevel));
+        _locations.Add(GetLevelInfo(LocationType.LOCATION_FOREST, _forestLevel));
+
+        foreach (var location in _locations)
+        {
+            location.Load();
+        }
+    }
+
+    public Location GetLocationByType(LocationType locationType)
+    {
+        foreach (var location in _locations)
+        {
+            if (location.location == locationType)
+            {
+                return location;
+            }
+        }
+        return null;
+    }
+
+    public Star GetStarByCollider2D(Collider2D collider2d)
+    {
+        foreach (var location in _locations)
+        {
+            Star star = location.GetStarByCollider2D(collider2d);
+            if (star != null)
+            {
+                if (star.collider2d == collider2d)
+                {
+                    return star;
+                }
+            }
+        }
+        return null;
+    }
+
+    private void Awake()
+    {
+        destroyableTweens = new Stack<Tween>();
+        LoadNames();
+
+        var locationCafeInfo = DataController.GetLocationInfo(LocationType.LOCATION_CAFE);
+        locationCafeInfo.OpenGameType(GameType.GAME_FEEDER);
+
+        if (_isOnDebug)
+        {
+            locationCafeInfo.FinishGameType(GameType.GAME_FEEDER);
+            locationCafeInfo.OpenGameType(GameType.GAME_FINDER);
+            locationCafeInfo.FinishGameType(GameType.GAME_FINDER);
+            locationCafeInfo.OpenGameType(GameType.GAME_SORTER);
+            locationCafeInfo.FinishGameType(GameType.GAME_SORTER);
+
+            var locationCircusInfo = DataController.GetLocationInfo(LocationType.LOCATION_CIRCUS);
+            locationCircusInfo.OpenGameType(GameType.GAME_FEEDER);
+            locationCircusInfo.FinishGameType(GameType.GAME_FEEDER);
+            locationCircusInfo.OpenGameType(GameType.GAME_FINDER);
+            locationCircusInfo.FinishGameType(GameType.GAME_FINDER);
+            locationCircusInfo.OpenGameType(GameType.GAME_SORTER);
+            locationCircusInfo.FinishGameType(GameType.GAME_SORTER);
+
+            var locationBeachInfo = DataController.GetLocationInfo(LocationType.LOCATION_BEACH);
+            locationBeachInfo.OpenGameType(GameType.GAME_FEEDER);
+            locationBeachInfo.FinishGameType(GameType.GAME_FEEDER);
+            locationBeachInfo.OpenGameType(GameType.GAME_FINDER);
+            locationBeachInfo.FinishGameType(GameType.GAME_FINDER);
+            locationBeachInfo.OpenGameType(GameType.GAME_SORTER);
+            locationBeachInfo.FinishGameType(GameType.GAME_SORTER);
+
+            var locationFairInfo = DataController.GetLocationInfo(LocationType.LOCATION_FAIR);
+            locationFairInfo.OpenGameType(GameType.GAME_FEEDER);
+            locationFairInfo.FinishGameType(GameType.GAME_FEEDER);
+            locationFairInfo.OpenGameType(GameType.GAME_FINDER);
+            locationFairInfo.FinishGameType(GameType.GAME_FINDER);
+            locationFairInfo.OpenGameType(GameType.GAME_SORTER);
+            locationFairInfo.FinishGameType(GameType.GAME_SORTER);
+
+            var locationForestInfo = DataController.GetLocationInfo(LocationType.LOCATION_FOREST);
+            locationForestInfo.OpenGameType(GameType.GAME_FEEDER);
+            locationForestInfo.FinishGameType(GameType.GAME_FEEDER);
+            locationForestInfo.OpenGameType(GameType.GAME_FINDER);
+            locationForestInfo.FinishGameType(GameType.GAME_FINDER);
+            locationForestInfo.OpenGameType(GameType.GAME_SORTER);
+            locationForestInfo.FinishGameType(GameType.GAME_SORTER);
+        }
+
+        DataController.OnLocationOpened += OnLocationOpenedHandler;
+        DataController.OnGameTypeOpened += OnGameTypeOpenedHandler;
+        DataController.OnGameTypeFinished += OnGameTypeFinishedHandler;
+
+        _cabinsParent = _wheel.Find("Cabins");
+        LoadLevels();
+
+        bool isGameComplete = DataController.GetLocationInfo(LocationType.LOCATION_FOREST).IsGameTypeFinished(GameType.GAME_SORTER);
+
+        if (isGameComplete)
+        {
+            Scenes sceneLast = (Scenes)System.Enum.Parse(typeof(Scenes), PlayerPrefs.GetString("lastFinishedLocation", Scenes.CafeFeeding.ToString()));
+            LocationType locationType = LocationType.LOCATION_CAFE;
+            GameType gameType = GameType.GAME_FEEDER;
+
+            GetLocationAndGameByScene(sceneLast, ref locationType, ref gameType);
+            Scenes nextScene = GetNextScene(locationType, gameType);
+            GetLocationAndGameByScene(nextScene, ref locationType, ref gameType);
+
+            GetLocationByType(locationType).GetStar(gameType).StartBounce();
+        }
+    }
+
+    private Scenes GetNextScene(LocationType locationType, GameType gameType)
+    {
+        switch (locationType)
+        {
+            case LocationType.LOCATION_CAFE:
+                switch (gameType)
+                {
+                    case GameType.GAME_FEEDER:
+                        return Scenes.BeachSorter;
+                    case GameType.GAME_FINDER:
+                        return Scenes.BeachFind;
+                    case GameType.GAME_SORTER:
+                        return Scenes.BeachFeeding;
+                    default:
+                        return Scenes.InitScene - 100;
+                }
+            case LocationType.LOCATION_FOREST:
+                switch (gameType)
+                {
+                    case GameType.GAME_FEEDER:
+                        return Scenes.CafeSorter;// | Scenes.CafeCooking;
+                    case GameType.GAME_FINDER:
+                        return Scenes.CafeFind;
+                    case GameType.GAME_SORTER:
+                        return Scenes.CafeFeeding;
+                    default:
+                        return Scenes.InitScene - 100;
+                }
+            case LocationType.LOCATION_FAIR:
+                switch (gameType)
+                {
+                    case GameType.GAME_FEEDER:
+                        return Scenes.CircusFind;
+                    case GameType.GAME_FINDER:
+                        return Scenes.CircusSorter;// | Scenes.CircusCooking;
+                    case GameType.GAME_SORTER:
+                        return Scenes.CircusFeeding;
+                    default:
+                        return Scenes.InitScene - 100;
+                }
+            case LocationType.LOCATION_BEACH:
+                switch (gameType)
+                {
+                    case GameType.GAME_FEEDER:
+                        return Scenes.FairSorter;// | Scenes.FairCooking;
+                    case GameType.GAME_FINDER:
+                        return Scenes.FairFeeding;
+                    case GameType.GAME_SORTER:
+                        return Scenes.FairFind;
+                    default:
+                        return Scenes.InitScene - 100;
+                }
+            case LocationType.LOCATION_CIRCUS:
+                switch (gameType)
+                {
+                    case GameType.GAME_FEEDER:
+                        return Scenes.ForestFind;
+                    case GameType.GAME_FINDER:
+                        return Scenes.ForestSorter;
+                    case GameType.GAME_SORTER:
+                        return Scenes.ForestFeeding;
+                    default:
+                        return Scenes.InitScene - 100;
+                }
+            default:
+                return Scenes.InitScene - 100;
+        }
+    }
+
+    private void Start()
+    {
+        if (_saidIntro == false)
+        {
+            _saidIntro = true;
+            destroyableTweens.Push(DOVirtual.DelayedCall(AudioPlayer.Instance.PlaySpeech("cv_hp-1") + 1, () =>
+            {
+                AudioPlayer.Instance.PlaySpeech("cv_hp-2");
+            }));
+        }
+        AudioPlayer.Instance.Play("Zvyk morya", delayFade: 1, loop: true);
+        AudioPlayer.Instance.Play("Tolpa v menu", delayFade: 1f, volume: 0.05f, loop: true);
+        AudioPlayer.Instance.Play("Ptizu", delayFade: 1f, volume: 0.05f, loop: true);
+    }
+
+    private void OnDestroy()
+    {
+        DataController.OnLocationOpened -= OnLocationOpenedHandler;
+        DataController.OnGameTypeOpened -= OnGameTypeOpenedHandler;
+        DataController.OnGameTypeFinished -= OnGameTypeFinishedHandler;      
+
+        while (destroyableTweens.Count > 0)
+        {
+            var t = destroyableTweens.Pop();
+            if (t.IsActive() && t.IsPlaying())
+            {
+                t.Kill();
+            }
+        }
+
+
+    }
+
+    private void OnLocationOpenedHandler(LocationType locationType)
+    {
+        var location = GetLocationByType(locationType);
+        //location.lockGameObject.SetActive(false);
+        //location.LoadLogo(true);
+    }
+
+    private void OnGameTypeOpenedHandler(LocationType location, GameType gameType)
+    {
+        var star = GetLocationByType(location).GetStar(gameType);
+        star.SetActive(true);
+        star.StartBounce();
+    }
+
+    private void OnGameTypeFinishedHandler(LocationType location, GameType gameType)
+    {
+        var star = GetLocationByType(location).GetStar(gameType);
+        star.SetActive(true);
+        star.StopBounce();
+    }
+
+    private bool _isInTransition = false;
+
+    override protected void SUpdate()
+    {
+        _wheel.Rotate(new Vector3(0, 0, 10 * Time.deltaTime));
+        foreach (Transform cabin in _cabinsParent)
+        {
+            cabin.rotation = Quaternion.Euler(0, 0, 0);
+        }
+        if (mouseDown && !_isInTransition)
+        {
+            var touchedCollider = TouchedColliderWorld();
+            if (touchedCollider)
+            {
+                Star touchedStar = GetStarByCollider2D(touchedCollider);
+                if (touchedStar != null)
+                {
+                    _autoTransitionTween.KillIfPlaying();
+                    _isInTransition = true;
+                    AudioPlayer.Instance.Play("knopka");
+                    touchedStar.OnClicked();
+                    AudioPlayer.Instance.Stop("Zvyk morya");
+                    AudioPlayer.Instance.Stop("Tolpa v menu");
+                    AudioPlayer.Instance.Stop("Ptizu");
+                    return;
+                }
+                if (touchedCollider.name == "Ball")
+                {
+                    AudioPlayer.Instance.Play("knopka");
+                    touchedCollider.GetComponent<Animator>().Play("Beach_Ball_Jump", 0, 0);
+                    return;
+                }
+                if (touchedCollider.name == "Jukebox")
+                {
+                    _isInTransition = true;
+                    AudioPlayer.Instance.Play("knopka");
+                    touchedCollider.transform.DOPunchScale(Vector3.one * 0.15f, 1.0f);
+                    SceneLoader.Instance.SwitchToScene(Scenes.Jukebox);
+                }
+            }
+        }
+    }
+
+    //private void OnDestroy() {
+    //    PlayerPrefs.Save();
+    //}
+}

@@ -1,0 +1,328 @@
+fileFormatVersion: 2
+guid: ce7f7438a8a198f4aaec7de779d77a89
+timeCreated: 1500275253
+licenseType: Free
+TextureImporter:
+  fileIDToRecycleName:
+    21300000: fair_finder_objects_0
+    21300002: fair_finder_objects_1
+    21300004: fair_finder_objects_2
+    21300006: fair_finder_objects_3
+    21300008: fair_finder_objects_4
+    21300010: fair_finder_objects_5
+    21300012: fair_finder_objects_6
+    21300014: fair_finder_objects_7
+    21300016: fair_finder_objects_8
+    21300018: fair_finder_objects_9
+    21300020: fair_finder_objects_10
+    21300022: fair_finder_objects_11
+    21300024: fair_finder_objects_12
+    21300026: fair_finder_objects_13
+    21300028: fair_finder_objects_14
+    21300030: fair_finder_objects_15
+    21300032: fair_finder_objects_16
+    21300034: fair_finder_objects_17
+    21300036: fair_finder_objects_18
+    21300038: fair_finder_objects_19
+    21300040: fair_finder_objects_20
+    21300042: fair_finder_objects_21
+  serializedVersion: 2
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 1
+    linearTexture: 0
+    correctGamma: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+  isReadable: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 0
+  cubemapConvolution: 0
+  cubemapConvolutionSteps: 7
+  cubemapConvolutionExponent: 1.5
+  seamlessCubemap: 0
+  textureFormat: -1
+  maxTextureSize: 2048
+  textureSettings:
+    filterMode: -1
+    aniso: 16
+    mipBias: -1
+    wrapMode: 1
+  nPOTScale: 0
+  lightmap: 0
+  rGBM: 0
+  compressionQuality: 50
+  allowsAlphaSplitting: 0
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spritePixelsToUnits: 100
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  buildTargetSettings: []
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: fair_finder_objects_1
+      rect:
+        serializedVersion: 2
+        x: 1192
+        y: 1584
+        width: 829
+        height: 412
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: fair_finder_objects_2
+      rect:
+        serializedVersion: 2
+        x: 44
+        y: 1704
+        width: 162
+        height: 264
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: fair_finder_objects_3
+      rect:
+        serializedVersion: 2
+        x: 280
+        y: 1707
+        width: 160
+        height: 265
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: fair_finder_objects_4
+      rect:
+        serializedVersion: 2
+        x: 518
+        y: 1708
+        width: 158
+        height: 263
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: fair_finder_objects_6
+      rect:
+        serializedVersion: 2
+        x: 752
+        y: 1699
+        width: 160
+        height: 265
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: fair_finder_objects_8
+      rect:
+        serializedVersion: 2
+        x: 988
+        y: 1698
+        width: 161
+        height: 262
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: fair_finder_objects_9
+      rect:
+        serializedVersion: 2
+        x: 23
+        y: 1368
+        width: 713
+        height: 285
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: fair_finder_objects_10
+      rect:
+        serializedVersion: 2
+        x: 1148
+        y: 1167
+        width: 672
+        height: 408
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: fair_finder_objects_11
+      rect:
+        serializedVersion: 2
+        x: 38
+        y: 1124
+        width: 687
+        height: 200
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: fair_finder_objects_12
+      rect:
+        serializedVersion: 2
+        x: 126
+        y: 867
+        width: 430
+        height: 206
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: fair_finder_objects_13
+      rect:
+        serializedVersion: 2
+        x: 618
+        y: 886
+        width: 210
+        height: 196
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: fair_finder_objects_14
+      rect:
+        serializedVersion: 2
+        x: 905
+        y: 730
+        width: 253
+        height: 358
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: fair_finder_objects_15
+      rect:
+        serializedVersion: 2
+        x: 1186
+        y: 742
+        width: 154
+        height: 361
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: fair_finder_objects_16
+      rect:
+        serializedVersion: 2
+        x: 1480
+        y: 472
+        width: 544
+        height: 618
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: fair_finder_objects_17
+      rect:
+        serializedVersion: 2
+        x: 68
+        y: 536
+        width: 175
+        height: 255
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: fair_finder_objects_18
+      rect:
+        serializedVersion: 2
+        x: 292
+        y: 543
+        width: 400
+        height: 223
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: fair_finder_objects_19
+      rect:
+        serializedVersion: 2
+        x: 74
+        y: 54
+        width: 252
+        height: 447
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: fair_finder_objects_20
+      rect:
+        serializedVersion: 2
+        x: 336
+        y: 56
+        width: 245
+        height: 445
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: fair_finder_objects_21
+      rect:
+        serializedVersion: 2
+        x: 666
+        y: 193
+        width: 769
+        height: 214
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    outline: []
+  spritePackingTag: 
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

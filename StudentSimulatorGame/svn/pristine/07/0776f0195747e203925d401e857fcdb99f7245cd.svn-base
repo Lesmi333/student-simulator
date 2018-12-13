@@ -1,0 +1,63 @@
+﻿using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+using PSV_Tutorials;
+using Spine.Unity;
+
+public static class FingerManager
+{
+	public static GameObject fingerPrefab;
+
+	private static  List<PSV_Tutorials.Finger> fingerList = new List<PSV_Tutorials.Finger> ();
+	private static List<FingerTutorial> allTutorials;
+
+	public static void Init ()
+	{
+		fingerPrefab = Resources.Load ("FingerTutorial/Prefabs/FingerPrefab") as GameObject;
+		allTutorials = new List<FingerTutorial> ();
+		FingerUtils.Init (fingerPrefab.GetComponent<SkeletonAnimation> ().SkeletonDataAsset);
+	}
+
+	private static PSV_Tutorials.Finger CreateNewFinger ()
+	{
+		PSV_Tutorials.Finger newFinger = (MonoBehaviour.Instantiate (fingerPrefab) as GameObject).GetComponent<PSV_Tutorials.Finger> ();
+		fingerList.Add (newFinger);
+		newFinger.Release ();
+		newFinger.Ocupy (); 
+		return newFinger;
+	}
+
+	public static PSV_Tutorials.Finger GetAvaliableFinger ()
+	{
+		for (int i = 0; i < fingerList.Count; i++)
+		{
+			if (fingerList [i] == null)
+			{
+				fingerList.Remove (fingerList [i]);
+			}  
+			else if (fingerList [i].isAvaliable)
+			{
+				fingerList [i].Ocupy ();
+				return fingerList [i];
+			}
+		}
+		return CreateNewFinger ();
+	}
+
+	private static void Add (FingerTutorial finger)
+	{
+		allTutorials.Add (finger);
+	}
+
+	public static void KillAll ()
+	{
+		foreach (FingerTutorial finger in allTutorials)
+		{
+			if (finger != null)
+			{
+				finger.Stop ();
+			}
+		}	
+		allTutorials.Clear ();
+	}
+}

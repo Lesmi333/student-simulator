@@ -1,0 +1,367 @@
+fileFormatVersion: 2
+guid: 0ed08c3401b4d7e429ab0295f0f685c3
+timeCreated: 1538588376
+licenseType: Free
+TextureImporter:
+  fileIDToRecycleName:
+    21300000: grafix_0
+    21300002: grafix_1
+    21300004: grafix_2
+    21300006: grafix_3
+    21300008: grafix_4
+    21300010: grafix_5
+    21300012: grafix_6
+    21300014: grafix_7
+    21300016: grafix_8
+    21300018: grafix_9
+    21300020: grafix_10
+    21300022: grafix_11
+    21300024: grafix_12
+    21300026: grafix_13
+    21300028: grafix_14
+    21300030: grafix_15
+    21300032: grafix_16
+    21300034: grafix_17
+    21300036: grafix_18
+    21300038: grafix_19
+    21300040: grafix_20
+    21300042: grafix_21
+  serializedVersion: 2
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 1
+    linearTexture: 0
+    correctGamma: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+  isReadable: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 0
+  cubemapConvolution: 0
+  cubemapConvolutionSteps: 7
+  cubemapConvolutionExponent: 1.5
+  seamlessCubemap: 0
+  textureFormat: -1
+  maxTextureSize: 2048
+  textureSettings:
+    filterMode: -1
+    aniso: 16
+    mipBias: -1
+    wrapMode: 1
+  nPOTScale: 0
+  lightmap: 0
+  rGBM: 0
+  compressionQuality: 50
+  allowsAlphaSplitting: 0
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spritePixelsToUnits: 100
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  buildTargetSettings: []
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: grafix_0
+      rect:
+        serializedVersion: 2
+        x: 49
+        y: 2981
+        width: 1924
+        height: 1084
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: grafix_1
+      rect:
+        serializedVersion: 2
+        x: 2301
+        y: 3919
+        width: 102
+        height: 106
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: grafix_2
+      rect:
+        serializedVersion: 2
+        x: 3095
+        y: 3371
+        width: 86
+        height: 621
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: grafix_3
+      rect:
+        serializedVersion: 2
+        x: 3216
+        y: 3327
+        width: 257
+        height: 642
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: grafix_4
+      rect:
+        serializedVersion: 2
+        x: 2117
+        y: 3639
+        width: 400
+        height: 252
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: grafix_5
+      rect:
+        serializedVersion: 2
+        x: 2599
+        y: 3399
+        width: 395
+        height: 488
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: grafix_6
+      rect:
+        serializedVersion: 2
+        x: 2159
+        y: 3439
+        width: 60
+        height: 97
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: grafix_7
+      rect:
+        serializedVersion: 2
+        x: 2247
+        y: 3392
+        width: 58
+        height: 57
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: grafix_8
+      rect:
+        serializedVersion: 2
+        x: 2315
+        y: 3408
+        width: 29
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: grafix_9
+      rect:
+        serializedVersion: 2
+        x: 2355
+        y: 3415
+        width: 30
+        height: 34
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: grafix_10
+      rect:
+        serializedVersion: 2
+        x: 119
+        y: 1737
+        width: 1924
+        height: 1086
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: grafix_11
+      rect:
+        serializedVersion: 2
+        x: 2163
+        y: 2153
+        width: 1926
+        height: 1084
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: grafix_12
+      rect:
+        serializedVersion: 2
+        x: 225
+        y: 1293
+        width: 350
+        height: 202
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: grafix_13
+      rect:
+        serializedVersion: 2
+        x: 663
+        y: 1293
+        width: 352
+        height: 202
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: grafix_14
+      rect:
+        serializedVersion: 2
+        x: 1103
+        y: 1293
+        width: 350
+        height: 202
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: grafix_15
+      rect:
+        serializedVersion: 2
+        x: 2163
+        y: 1057
+        width: 1926
+        height: 1084
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: grafix_16
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 743
+        width: 799
+        height: 490
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: grafix_17
+      rect:
+        serializedVersion: 2
+        x: 904
+        y: 705
+        width: 837
+        height: 528
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: grafix_18
+      rect:
+        serializedVersion: 2
+        x: 1765
+        y: 144
+        width: 340
+        height: 963
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: grafix_19
+      rect:
+        serializedVersion: 2
+        x: 2161
+        y: 0
+        width: 1924
+        height: 1039
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: grafix_20
+      rect:
+        serializedVersion: 2
+        x: 81
+        y: 109
+        width: 230
+        height: 460
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: grafix_21
+      rect:
+        serializedVersion: 2
+        x: 424
+        y: 191
+        width: 152
+        height: 216
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    outline: []
+  spritePackingTag: 
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

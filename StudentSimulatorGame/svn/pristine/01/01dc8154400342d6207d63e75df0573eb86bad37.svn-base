@@ -1,0 +1,109 @@
+﻿#if UNITY_EDITOR
+//#define WRITE_COMPAIRED_ALWAYS // To write compaired language always in log or not to
+//#define COMPARE_TO_UNDEFINED   // Do we need to compair undefined languages in 'Languages.cs\Languages.languages'
+
+using UnityEngine;
+using System.Collections.Generic;
+using UnityEditor;
+
+public class SoundFolderChecker : MonoBehaviour
+{
+    [MenuItem("HelpTools/Сheck language folders for sounds")]
+    public static void CheckLanguageSound() {
+
+        string debugLogPrefix = "[ Check Languages ] : ";
+        string checkingFolder = "Sounds/Multilanguage/";
+        
+        Languages.Language mainCheckingLangEnum = Languages.Language.Russian;           // Main checking language (compares to this if it's not empty or available).
+        Languages.Language secondCheckingLangEnum = Languages.Language.English;         // Second checking language (compares to this folder if main lang folder not found or empty).
+
+        var langAudioClipNames = new Dictionary<Languages.Language, List<string>>();
+        var allLangsEnumArray = System.Enum.GetValues(typeof(Languages.Language));
+
+        // Getting lists of all languages and checking if they are available in Languages.cs.
+        foreach (Languages.Language langNameEnum in allLangsEnumArray)
+        {
+            var langNameString = langNameEnum.ToString();
+            AudioClip[] langClipsArray = Resources.LoadAll<AudioClip>(checkingFolder + langNameString);
+            int languageClipsCount = langClipsArray.Length;
+            if (!Languages.languages.ContainsKey(langNameEnum) && languageClipsCount > 0)
+            {
+                Debug.LogError(debugLogPrefix + "  " + checkingFolder + " contains not empty lang folder " + langNameString + " undefined in class 'Languages.cs\\Languages.languages'");
+#if !COMPARE_TO_UNDEFINED
+                continue;
+#endif
+            }
+            var clipNames = new List<string>();
+            for (int i = 0; i < languageClipsCount; i++)
+            {
+                clipNames.Add(langClipsArray[i].name);
+            }
+            if (languageClipsCount != 0) langAudioClipNames.Add(langNameEnum, new List<string>(clipNames));
+        }
+
+        // Applying main (if enabled) or second language as compairing lang.
+        Languages.Language compairedLang =
+            langAudioClipNames.ContainsKey(mainCheckingLangEnum) ?
+            mainCheckingLangEnum
+            :
+            secondCheckingLangEnum;
+        bool isProblemFound = false;
+        var compairedLangToString = compairedLang.ToString();
+#if !WRITE_COMPAIRED_ALWAYS
+        Debug.Log(debugLogPrefix + " compairing to " + compairedLangToString + " language.");
+#endif
+        // Compared language array.
+        List<string> compairedLangClipNames = new List<string>();
+        if (langAudioClipNames.TryGetValue(compairedLang, out compairedLangClipNames))
+        {
+            compairedLangClipNames = new List<string>(compairedLangClipNames);
+            int compairedLangClipsCount = compairedLangClipNames.Count;
+            foreach (var langItem in langAudioClipNames)
+            {
+                var langItemKeyString = langItem.Key.ToString();
+                int differenceCount = langItem.Value.Count - compairedLangClipNames.Count;
+                int absDiff = Mathf.Abs(differenceCount);
+                if (differenceCount != 0)
+                {
+                    isProblemFound = true;
+                    Debug.LogError(debugLogPrefix + " " + langItemKeyString + " " + (differenceCount > 0 ? ("contains " + absDiff + " more") : ("missing " + absDiff)) + " " + (absDiff == 1 ? "clip" : "clips")
+#if WRITE_COMPAIRED_ALWAYS
+                        + " than " + compairedLangToString
+#endif
+                    + "."
+                    );
+                }
+                for (int i = 0; i < compairedLangClipsCount; i++) {
+                    var langClipName = compairedLangClipNames[i];
+                    if (!langItem.Value.Remove(langClipName)) {
+                        isProblemFound = true;
+                        Debug.LogError(debugLogPrefix + " " + langItemKeyString + " doesn't contain " + langClipName
+#if WRITE_COMPAIRED_ALWAYS
+                            + " as compaired " + compairedLangToString
+#endif
+                        + "."
+                        );
+                    }
+                }
+                while (langItem.Value.Count != 0) {
+                    isProblemFound = true;
+                    int itemIndex = langItem.Value.Count - 1;
+                    var item = langItem.Value[itemIndex];
+                    langItem.Value.RemoveAt(itemIndex);
+                    Debug.LogError(debugLogPrefix + " " + langItemKeyString + " contains less " + item
+#if WRITE_COMPAIRED_ALWAYS
+                            + " that doesn't exist in " + compairedLangToString
+#endif
+                    + "."
+                    );
+                }
+            }
+            if (isProblemFound) {
+                Debug.LogError(debugLogPrefix + " some problems were found.");
+            } else {
+                Debug.Log(debugLogPrefix + " no problems found.");
+            }
+        }
+	}
+}
+#endif

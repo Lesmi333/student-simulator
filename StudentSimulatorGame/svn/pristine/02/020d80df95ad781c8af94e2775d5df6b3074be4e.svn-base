@@ -1,0 +1,166 @@
+﻿using UnityEngine;
+using System.Collections;
+using DG.Tweening;
+using UnityEngine.UI;
+
+
+public class SlidingPanel :MonoBehaviour
+{
+
+    protected bool
+        sliderShown = false,
+        isMoving = false;
+
+    protected RectTransform
+        Slider;
+    public RectTransform
+        Rotator;
+
+    private ScrollRect
+       scroller;
+
+
+    [Tooltip ( "Set y = 1 to slide up or y = -1 to slide down" )]
+    public Vector2
+        slide_direction;
+
+    public float
+        sliderDeuration = 0.5f;
+
+    private Sequence
+        seq = null;
+
+    public LangToggle []
+        children;
+
+
+    public float scroll_pos;
+
+    void Update ()
+    {
+        if (scroller)
+        {
+            scroll_pos = scroller.verticalNormalizedPosition;
+        }
+    }
+
+
+    void Awake ()
+    {
+        Slider = GetComponent<RectTransform> ( );
+        scroller = GetComponentInChildren<ScrollRect> ( );
+       
+    }
+
+
+    virtual public void Init ()
+    {
+		if (scroller != null)
+		{
+			children = scroller.content.GetComponentsInChildren<LangToggle> ( false );
+		}
+		else
+		{
+			Debug.Log ( "Scroller is null, not lang panel" );
+		}
+		isMoving = sliderShown = false;
+        if (Rotator != null)
+        {
+            Rotator.localRotation = Quaternion.identity;
+        }
+        if (Slider != null)
+        {
+            Slider.localPosition = Vector3.zero;
+        }
+    }
+
+
+    void Start ()
+    {
+        Init ( );
+    }
+
+
+    public void ShowMenu ()
+    {
+        if (seq != null && isMoving)
+        {
+            seq.Kill ( );
+        }
+        sliderShown = !sliderShown;
+        if (sliderShown)
+        {
+            if (scroller != null && children != null && children.Length > 0) //scrolls down to selected language
+            {
+                Languages.Language current_lng = Languages.GetLanguage ( );
+                int active_button = -1;
+                for (int i = 0; i < children.Length; i++)
+                {
+                    if (children [i].lang == current_lng)
+                    {
+                        active_button = i;
+                        break;
+                    }
+                }
+                if (active_button >= 0)
+                {
+                    StartCoroutine ( ScrollToActive ( GetScrollPos ( active_button ) ) );
+                }
+            }
+        }
+        isMoving = true;
+        seq = DOTween.Sequence ( );
+        if (Rotator != null)
+        {
+            seq.Join ( Rotator.DOLocalRotate ( sliderShown ? new Vector3 ( 0, 0, 180f ) : Vector3.zero, sliderDeuration ) );
+        }
+        if (Slider != null)
+        {
+            //				Vector2 sliderPos = sliderShown ? Vector2.zero : sliderOffset;
+            Slider.DOLocalMove ( new Vector2 ( sliderShown ? Slider.rect.width * slide_direction.x : 0, sliderShown ? Slider.rect.height * slide_direction.y : 0 ), sliderDeuration, true ).SetEase ( Ease.OutSine );
+        }
+        seq.AppendCallback ( () =>
+        {
+            isMoving = false;
+        } );
+    }
+
+
+    float GetScrollPos (int active_item)
+    {
+        float res;
+        if (active_item == 0)
+        {
+            res = 1;
+        }
+        else
+        if (active_item == children.Length - 1)
+        {
+            res = 0;
+        }
+        else
+        {
+            res = 1 - ((active_item) / (float) children.Length);
+        }
+        return res;
+    }
+
+
+    IEnumerator ScrollToActive (float pos)
+    {
+        yield return new WaitForEndOfFrame ( );
+        scroller.verticalNormalizedPosition = pos;
+    }
+
+
+    //public bool OnEsc ()
+    //{
+    //    if (sliderShown)
+    //    {
+    //        ShowMenu ( );
+    //        return true;
+    //    }
+
+    //    return false;
+    //}
+}

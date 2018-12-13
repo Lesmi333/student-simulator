@@ -1,0 +1,612 @@
+#define GOOGLE_ADS_PRESENT
+//#define KIDOZ_PRESENT
+//#define MOBFOX_PRESENT
+
+using UnityEngine;
+using System.Collections.Generic;
+using System.Collections;
+using System;
+
+namespace PSV_Prototype
+{
+
+	public class AdsManager :MonoBehaviour
+	{
+		public static Action<string> OnMessageLogged;
+
+		public static AdsManager Instance;
+
+		private List<IAdProvider>
+			ad_providers;
+
+		private int
+			home_ads_index = -1;
+
+		public static bool
+			debug_mode = false;
+		public const float
+			REQUEST_INTERVAL = 10f;
+		private float
+			last_interstitial_time = 0;
+		private bool
+			banner_use_home_ads = false,
+			native_use_home_ads = false,
+			banner_visible = false,
+			native_visible = false;
+
+		private enum AdType
+		{
+			Banner,
+			Interstitial,
+			Rewarded,
+			Native,
+		}
+
+		private class HomeAdCounter
+		{
+			public int counter;
+			public HomeAdsSettings.IntervalParams param;
+
+			public HomeAdCounter (int _counter, HomeAdsSettings.IntervalParams _param)
+			{
+				counter = _counter;
+				param = _param;
+			}
+
+			public new string ToString ()
+			{
+				return param + " " + counter;
+			}
+
+			public void Increment ()
+			{
+				counter++;
+			}
+
+			public void Set (int val)
+			{
+				counter = val;
+			}
+		}
+
+		private Dictionary<AdType, HomeAdCounter> ad_counters = new Dictionary<AdType, HomeAdCounter> ( )
+		{
+			{AdType.Interstitial, new HomeAdCounter(0, HomeAdsSettings.IntervalParams.HOME_INTERSTITIAL_INTERVAL )},
+			{AdType.Banner, new HomeAdCounter(0, HomeAdsSettings.IntervalParams.HOME_BANNER_INTERVAL )},
+			{AdType.Native, new HomeAdCounter(0, HomeAdsSettings.IntervalParams.HOME_NATIVE_INTERVAL )},
+			{AdType.Rewarded, new HomeAdCounter(0, HomeAdsSettings.IntervalParams.HOME_REWARDED_INTERVAL )},
+		};
+
+		void Awake ()
+		{
+			if (Instance == null)
+			{
+				Instance = this;
+				DontDestroyOnLoad ( gameObject );
+				DelayedCallHandler dch = FindObjectOfType<DelayedCallHandler> ( );
+				if (dch == null)
+				{
+					gameObject.AddComponent<DelayedCallHandler> ( );
+				}
+			}
+			else
+			{
+				LogMessage ( "Not allowed multiple instances of AdsManager" );
+				Destroy ( gameObject );
+			}
+		}
+
+		void OnEnable ()
+		{
+			Initialize ( );
+			SubscribeListeners ( );
+		}
+
+		void OnDisable ()
+		{
+			UnsubscribeListeners ( );
+		}
+
+		//change it when providers added
+		private IAdProvider GetProvider (AdNetwork net)
+		{
+#if UNITY_EDITOR
+			//overriding providers to emulate ads in editor
+			return this.gameObject.AddComponent<DummyProvider> ( );
+#endif
+			IAdProvider res = null;
+			switch (net)
+			{
+#if !UNITY_IPHONE
+				case AdNetwork.NeatPlug:
+					res = new NeatPlugProvider ( );
+					break;
+#endif
+#if GOOGLE_ADS_PRESENT
+				case AdNetwork.GoogleAds:
+					res = new GoogleAdsProvider ( );
+					break;
+				case AdNetwork.HomeAds:
+					res = new HomeAdsProvider ( );
+					//res = home_ads_provider;
+					break;
+#endif
+#if MOBFOX_PRESENT
+				case AdNetwork.MobFox:
+					res = new MobFoxAdsProvider ( );
+					break;
+#endif
+#if KIDOZ_PRESENT
+				case AdNetwork.Kidoz:
+					res = new KidozProvider ( );
+					break;
+#endif
+			}
+			return res;
+		}
+
+		private void Initialize ()
+		{
+			debug_mode = ProjectSettingsManager.settings.ads_manager_debug; //comment if missing this manager
+																			//init providers
+			AdsSettings.Init ( ); //get saved params for ad providers
+			SetProviders ( AdsSettings.GetProvidersList ( ) ); //set a list of available providers in given order
+															   //set counters to negative interval value to show home when reach zero (% interval)
+			foreach (var counter in ad_counters) //set counters for each type of ad to show HomeAds
+			{
+				HomeAdCounter c = counter.Value;
+				c.counter = -HomeAdsSettings.GetAdInterval ( c.param ) + 1; //-count + 1 to start counting impressions correctly
+			}
+		}
+
+
+		private void SubscribeListeners ()
+		{
+			AdsInterop.OnShowBannerAd += ShowBanner;
+			AdsInterop.OnHideBannerAd += HideBanner;
+			AdsInterop.OnShowNativeAd += ShowNativeAd;
+			AdsInterop.OnHideNativeAd += HideNativeAd;
+			AdsInterop.OnInitialiseAds += InitAds;
+			AdsInterop.OnShowInterstitialAd += ShowInterstitial;
+			AdsInterop.OnShowRewarded += ShowRewarded;
+			AdsInterop.OnRefreshBannerAd += RefreshBannerAd;
+			AdsInterop.OnRefreshNativeAd += RefreshNativeAd;
+			AdsInterop.OnDisableAds += DisableAds;
+			AdsInterop.OnEnableAds += EnableAds;
+			HomeAdsSettings.OnHomeAdsIDsUpdated += OnHomeAdsIDsUpdated;
+		}
+
+		private void UnsubscribeListeners ()
+		{
+			AdsInterop.OnShowBannerAd -= ShowBanner;
+			AdsInterop.OnHideBannerAd -= HideBanner;
+			AdsInterop.OnShowNativeAd -= ShowNativeAd;
+			AdsInterop.OnHideNativeAd -= HideNativeAd;
+			AdsInterop.OnInitialiseAds -= InitAds;
+			AdsInterop.OnShowInterstitialAd -= ShowInterstitial;
+			AdsInterop.OnShowRewarded -= ShowRewarded;
+			AdsInterop.OnRefreshBannerAd -= RefreshBannerAd;
+			AdsInterop.OnRefreshNativeAd -= RefreshNativeAd;
+			AdsInterop.OnDisableAds -= DisableAds;
+			AdsInterop.OnEnableAds -= EnableAds;
+			HomeAdsSettings.OnHomeAdsIDsUpdated -= OnHomeAdsIDsUpdated;
+		}
+
+
+		#region Banner
+
+		private void ShowBanner (bool use_home_ads)
+		{
+			use_home_ads = use_home_ads || CanUseHome ( AdType.Banner );
+			LogMessage ( "ShowBanner: use_home_ads " + use_home_ads );
+			banner_visible = true;
+			banner_use_home_ads = use_home_ads;
+			UpdateBannerAds ( );
+			IncrementCounter ( AdType.Banner );
+		}
+
+		private void HideBanner ()
+		{
+			banner_visible = false;
+			UpdateBannerAds ( );
+		}
+
+		private void UpdateBannerAds ()
+		{
+			int provider_selected = -1;
+			if (banner_visible && banner_use_home_ads)
+			{
+				IHomeAdsProvider home_provider = GetHomeAdsProvider ( );
+				if (home_provider != null && home_provider.IsBannerAdAvailable ( ))
+				{
+					provider_selected = home_ads_index;
+				}
+			}
+			for (int i = 0; i < ad_providers.Count; i++)
+			{
+				if (banner_visible && provider_selected < 0 && ad_providers [i].IsBannerAdAvailable ( )) //check if any provider showed banner and if no - check wether current provider has banner
+				{
+					provider_selected = i;
+				}
+				ad_providers [i].ShowBannerAd ( banner_visible && i == provider_selected ); //showing providers ad if home_ads werent shown and if it is a provider that cached ads
+			}
+		}
+
+
+
+
+
+		private void RefreshBannerAd (AdsInterop.AdPosition ad_pos, AdsInterop.AdSize ad_size)
+		{
+			for (int i = 0; i < ad_providers.Count; i++)
+			{
+				ad_providers [i].RefreshBannerAd ( ad_pos, ad_size );
+			}
+			UpdateBannerAds ( );
+		}
+
+		#endregion
+
+		#region Native
+
+		private void ShowNativeAd (bool use_home_ads)
+		{
+			use_home_ads = use_home_ads || CanUseHome ( AdType.Native );
+			LogMessage ( "ShowNativeAd: use_home_ads " + use_home_ads );
+			native_visible = true;
+			native_use_home_ads = use_home_ads;
+			UpdateNativeAds ( );
+			IncrementCounter ( AdType.Native );
+		}
+
+		private void HideNativeAd ()
+		{
+			native_visible = false;
+			UpdateNativeAds ( );
+		}
+
+		private void UpdateNativeAds ()
+		{
+			bool home_shown = false;
+			int provider_selected = -1;
+			if (banner_visible && native_use_home_ads)
+			{
+				IHomeAdsProvider home_provider = GetHomeAdsProvider ( );
+				if (home_provider != null && home_provider.IsNativeAdAvailable ( ))
+				{
+					provider_selected = home_ads_index;
+				}
+			}
+			for (int i = 0; i < ad_providers.Count; i++)
+			{
+				if (native_visible && provider_selected < 0 && ad_providers [i].IsNativeAdAvailable ( )) //check if any provider showed banner and if no - check wether current provider has banner
+				{
+					provider_selected = i;
+				}
+				ad_providers [i].ShowNativeAd ( !home_shown && native_visible && i == provider_selected );
+			}
+		}
+
+		private void RefreshNativeAd (AdsInterop.AdPosition ad_pos, AdsInterop.AdSize ad_size)
+		{
+			for (int i = 0; i < ad_providers.Count; i++)
+			{
+				ad_providers [i].RefreshNativeAd ( ad_pos, ad_size );
+			}
+			UpdateNativeAds ( );
+		}
+
+		#endregion
+
+		#region Interstitial
+
+		private void ShowInterstitial (bool use_home_ads = false)
+		{
+			use_home_ads = use_home_ads || CanUseHome ( AdType.Interstitial );
+			LogMessage ( "ShowInterstitial: use_home_ads " + use_home_ads );
+			//selecting home ads first and then main_providers in given order
+			if (use_home_ads)
+			{
+				IHomeAdsProvider home_provider = GetHomeAdsProvider ( );
+				if (home_provider != null && home_provider.ShowInterstitialAd ( ))
+				{
+					return;
+				}
+			}
+			for (int i = 0; i < ad_providers.Count; i++)
+			{
+				if (ad_providers [i].ShowInterstitialAd ( ))
+				{
+					return;
+				}
+			}
+			OnInterClosed ( );
+		}
+
+		#endregion
+
+		#region Rewarded
+
+		private void ShowRewarded (bool use_home_ads = false)
+		{
+			use_home_ads = use_home_ads || CanUseHome ( AdType.Rewarded );
+
+			LogMessage ( "ShowRewarded: use_home_ads " + use_home_ads );
+
+			//selecting home ads first and then main_providers in given order
+			if (use_home_ads)
+			{
+				IHomeAdsProvider home_provider = GetHomeAdsProvider ( );
+				if (home_provider != null && home_provider.ShowRewardedAd ( ))
+				{
+					return;
+				}
+			}
+			for (int i = 0; i < ad_providers.Count; i++)
+			{
+				if (ad_providers [i].ShowRewardedAd ( ))
+				{
+					return;
+				}
+			}
+			OnRewardedClosed ( );
+		}
+
+		#endregion
+
+		#region General methods
+
+		private bool CanUseHome (AdType ad_type)
+		{
+			HomeAdCounter c = ad_counters [ad_type];
+			int interval = HomeAdsSettings.GetAdInterval ( c.param );
+			bool res = interval > 1 && c.counter % interval == 0;
+			return res;
+		}
+
+		private void IncrementCounter (AdType ad_type)
+		{
+			//ad_counters [ad_type].counter++;
+			ad_counters [ad_type].Increment ( );
+		}
+
+		public void InitAds (bool ads_enabled, bool children_tagged, bool for_families)
+		{
+			bool home_ads_initialised = false;
+
+			LogMessage ( "Initialising providers count " + ad_providers.Count );
+
+			//init providers with their ids
+			for (int i = 0; i < ad_providers.Count; i++)
+			{
+				InitialiseProvider ( ad_providers [i], ads_enabled, children_tagged, for_families );
+				if (!home_ads_initialised && ad_providers [i].GetNetworkType ( ) == AdNetwork.HomeAds)
+				{
+					home_ads_initialised = true;
+				}
+			}
+		}
+
+
+		private void InitialiseProvider (IAdProvider provider, bool ads_enabled, bool children_tagged, bool for_families)
+		{
+			provider.OnInterstitialClosed += OnInterClosed;
+			provider.OnBannerReadyChanged += BannerReadyChanged;
+			provider.OnNativeReadyChanged += NativeReadyChanged;
+			provider.OnRewardedClosed += OnRewardedClosed;
+			provider.OnRewardedCompleted += OnRewardedCompleted;
+			provider.OnEventOccured += LogEvent;
+			provider.OnInterstitialShown += InterstitialShown;
+			provider.OnRewardedShown += RewardedShown;
+			provider.OnBannerEvent += SendBannerAvailable;
+			provider.OnInterstitialEvent += SendInterstitialAvailable;
+			provider.OnNativeEvent += SendNativeAvailable;
+			provider.OnRewardedEvent += SendRewardedAvailable;
+			provider.Init ( ads_enabled, children_tagged, for_families, AdsSettings.GetSettings ( provider.GetNecessaryParams ( ) ) );
+		}
+
+
+		public void SetProviders (AdNetwork [] providers)
+		{
+			int _home_ads_index = -1;
+
+			//set main_providers array
+			List<IAdProvider> i_providers = new List<IAdProvider> ( );
+			for (int i = 0; i < providers.Length; i++)
+			{
+				AdNetwork net = providers [i];
+				if (i_providers.FindIndex ( X => X.GetNetworkType ( ) == net ) < 0)
+				{
+					//add unique providers only
+					IAdProvider i_prov = GetProvider ( net );
+					if (i_prov != null)
+					{
+						i_providers.Add ( i_prov );
+						if (net == AdNetwork.HomeAds)
+						{
+							int last_provider = i_providers.Count - 1;
+							IHomeAdsProvider home_prov = i_providers [last_provider] as IHomeAdsProvider;
+							if (home_prov != null)
+							{
+								//save home_ads index in providers array
+								_home_ads_index = last_provider;
+								//set home_ads arrays of ids available for this device
+								SetHomeAdsProvider ( home_prov );
+							}
+						}
+					}
+				}
+			}
+			home_ads_index = _home_ads_index; //-1 will tell us that home_ads are not present in main queue
+			ad_providers = i_providers;
+		}
+
+		private IHomeAdsProvider GetHomeAdsProvider ()
+		{
+			IHomeAdsProvider res = null;
+			if (home_ads_index >= 0 && home_ads_index < ad_providers.Count)
+			{
+				res = ad_providers [home_ads_index] as IHomeAdsProvider;
+			}
+			return res;
+		}
+
+
+		private void SetHomeAdsProvider (IHomeAdsProvider home_ads_provider)
+		{
+			if (home_ads_provider != null)
+			{
+				for (int i = 0; i < HomeAdsSettings.home_ads_params.Length; i++)
+				{
+					UpdateHomeAdsIDs ( home_ads_provider, HomeAdsSettings.home_ads_params [i], HomeAdsSettings.GetIDs ( HomeAdsSettings.home_ads_params [i] ) );
+				}
+			}
+		}
+
+		private void UpdateHomeAdsIDs (IHomeAdsProvider home_ads_provider, ProviderParams param, string [] ids)
+		{
+			if (home_ads_provider != null)
+			{
+				home_ads_provider.SetHomeAdsIDs ( param, ids );
+			}
+		}
+
+
+		private void OnHomeAdsIDsUpdated (ProviderParams param, string [] ids)
+		{
+			IHomeAdsProvider prov = GetHomeAdsProvider ( );
+			if (prov != null)
+			{
+				UpdateHomeAdsIDs ( prov, param, ids );
+			}
+		}
+
+		bool HasProvider (AdNetwork net)
+		{
+			return ad_providers.FindIndex ( X => X.GetNetworkType ( ) == net ) >= 0;
+		}
+
+		private void DisableAds ()
+		{
+			for (int i = 0; i < ad_providers.Count; i++)
+			{
+				ad_providers [i].DisableAds ( );
+			}
+		}
+
+		private void EnableAds ()
+		{
+			for (int i = 0; i < ad_providers.Count; i++)
+			{
+				ad_providers [i].EnableAds ( );
+			}
+			//UpdateBannerAds ( );
+			//UpdateNativeAds ( );
+		}
+
+		public static void LogMessage (string message, bool error = false)
+		{
+			if (error)
+			{
+				Debug.LogError ( "@ AdsError @ " + message );
+			}
+			else if (debug_mode)
+			{
+				Debug.Log ( "@ Ads @ " + message );
+			}
+
+			if (OnMessageLogged != null)
+			{
+				OnMessageLogged ( (error ? "~" : "") + message );
+			}
+		}
+
+
+		public static void LogEvent (string message)
+		{
+			AnalyticsManager.LogEvent ( AnalyticsEvents.Custom, message );
+		}
+
+		public delegate void DelayedCallback ();
+
+
+		public void DelayedCall (DelayedCallback callback, float t)
+		{
+			StartCoroutine ( WaitAndExecute ( callback, t ) );
+		}
+
+
+		IEnumerator WaitAndExecute (DelayedCallback callback, float t)
+		{
+			yield return new WaitForSeconds ( t );
+			callback ( );
+		}
+
+		#endregion
+
+		#region Provider callbacks holder
+
+		public static void SendBannerAvailable (AdNetwork net, bool is_available)
+		{
+			AdsInterop.BannerEvent ( net.ToString ( ), is_available );
+		}
+
+		private void BannerReadyChanged ()
+		{
+			UpdateBannerAds ( );
+		}
+
+
+		private void InterstitialShown ()
+		{
+			IncrementCounter ( AdType.Interstitial );
+			AdsInterop.InterstitialShown ( );
+		}
+
+		private void OnInterClosed ()
+		{
+			AdsInterop.InterstitialClosed ( );
+		}
+
+		public static void SendInterstitialAvailable (AdNetwork net, bool is_available)
+		{
+			AdsInterop.InterstitialEvent ( net.ToString ( ), is_available );
+		}
+
+
+		private void RewardedShown ()
+		{
+			IncrementCounter ( AdType.Rewarded );
+			AdsInterop.RewardedShown ( );
+		}
+
+		private void OnRewardedCompleted ()
+		{
+			AdsInterop.RewardedCompleted ( );
+		}
+
+		private void OnRewardedClosed ()
+		{
+			AdsInterop.RewardedClosed ( );
+		}
+
+		public static void SendRewardedAvailable (AdNetwork net, bool is_available)
+		{
+			AdsInterop.RewardedEvent ( net.ToString ( ), is_available );
+		}
+
+
+		private void NativeReadyChanged ()
+		{
+			UpdateNativeAds ( );
+		}
+
+		public static void SendNativeAvailable (AdNetwork net, bool is_available)
+		{
+			AdsInterop.NativeEvent ( net.ToString ( ), is_available );
+		}
+
+		#endregion
+
+	}
+}
